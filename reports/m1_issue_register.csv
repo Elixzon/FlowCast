@@ -1,0 +1,17 @@
+file,issue,count,severity,details
+traffic_sensor_log.csv,missing_values,4387,warning,traffic_volume
+traffic_sensor_log.csv,missing_traffic_volume,4387,warning,
+traffic_sensor_log.csv,missing_values,4382,warning,avg_speed
+traffic_sensor_log.csv,missing_avg_speed,4382,warning,
+traffic_sensor_log.csv,missing_values,4383,warning,occupancy
+traffic_sensor_log.csv,missing_occupancy,4383,warning,
+traffic_sensor_log.csv,missing_values,26883,warning,congestion_level
+traffic_sensor_log.csv,missing_congestion_level,26883,warning,
+traffic_sensor_log.csv,impossible_traffic_volume,241,warning,
+traffic_sensor_log.csv,impossible_avg_speed,237,warning,
+traffic_sensor_log.csv,impossible_occupancy,234,warning,
+traffic_sensor_log.csv,duplicate_key,3534,warning,
+weather_observations.csv,missing_values,167,warning,temperature
+weather_observations.csv,missing_temperature,167,warning,
+weather_observations.csv,missing_values,111,warning,visibility
+weather_observations.csv,missing_visibility,111,warning,

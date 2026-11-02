@@ -1,0 +1,153 @@
+{
+  "stage": "m2",
+  "completed_at_utc": "2026-11-02T11:55:03.434376+00:00",
+  "raw_sha256": {
+    "traffic_sensor_log.csv": "8f793f3643c891d4fdda7b66c5c4792d24f4db3f26a07cccb8f1d613e254062a",
+    "weather_observations.csv": "63f3dc54a491dfd5d4663d8bf0602779084c30a1396f0c7b4fd177e132bc8a31",
+    "calendar_events.csv": "60d3de6b731486e02f6edaa3515af87c2472231a211b48d94d7a3cad38799b9c"
+  },
+  "details": {
+    "module": "M2 - Data Cleaning and Integration",
+    "timezone": "UTC",
+    "traffic": {
+      "source_rows": 178468,
+      "clean_rows": 176701,
+      "timestamp_rows_quarantined": 0,
+      "rows_with_unresolved_model_fields": 4588,
+      "duplicate_rows_removed": 1767,
+      "invalid_measurements_marked_missing": {
+        "traffic_volume": 241,
+        "vehicle_count": 0,
+        "avg_speed": 237,
+        "occupancy": 234,
+        "travel_time": 0,
+        "accident_count": 0,
+        "signal_timing": 0,
+        "road_capacity": 0
+      },
+      "before_null_counts": {
+        "road_id": 0,
+        "road_name": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "weather_station_id": 0,
+        "date": 0,
+        "time": 0,
+        "traffic_volume": 4387,
+        "vehicle_count": 0,
+        "vehicle_type_dist": 0,
+        "avg_speed": 4382,
+        "occupancy": 4383,
+        "congestion_level": 26883,
+        "travel_time": 0,
+        "accident_count": 0,
+        "signal_timing": 0,
+        "road_capacity": 0
+      },
+      "remaining_nulls": {
+        "road_id": 0,
+        "road_name": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "weather_station_id": 0,
+        "date": 0,
+        "time": 0,
+        "traffic_volume": 4587,
+        "vehicle_count": 0,
+        "vehicle_type_dist": 0,
+        "avg_speed": 10,
+        "occupancy": 11,
+        "congestion_level": 681,
+        "travel_time": 0,
+        "accident_count": 0,
+        "signal_timing": 0,
+        "road_capacity": 0
+      }
+    },
+    "weather": {
+      "source_rows": 10872,
+      "clean_rows": 10872,
+      "timestamp_rows_quarantined": 0,
+      "rows_with_unresolved_weather_fields": 0,
+      "duplicate_rows_removed": 0,
+      "before_null_counts": {
+        "station_id": 0,
+        "date": 0,
+        "time": 0,
+        "weather_condition": 0,
+        "temperature": 167,
+        "rainfall": 0,
+        "visibility": 111
+      },
+      "remaining_nulls": {
+        "station_id": 0,
+        "date": 0,
+        "time": 0,
+        "weather_condition": 0,
+        "temperature": 0,
+        "rainfall": 0,
+        "visibility": 0
+      },
+      "normalised_weather_labels": [
+        "Clear",
+        "Cloudy",
+        "Fog",
+        "Rain"
+      ]
+    },
+    "calendar": {
+      "source_rows": 151,
+      "clean_rows": 151,
+      "invalid_date_rows_quarantined": 0,
+      "duplicate_rows_removed": 0,
+      "remaining_nulls": {
+        "date": 0,
+        "public_holiday": 0,
+        "holiday_name": 0,
+        "event_flag": 0,
+        "event_name": 0,
+        "roadwork_flag": 0
+      }
+    },
+    "merge": {
+      "merged_rows": 176701,
+      "merged_columns": 26,
+      "unmatched_weather_rows": 0,
+      "unmatched_calendar_rows": 0,
+      "remaining_nulls": {
+        "road_id": 0,
+        "road_name": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "weather_station_id": 0,
+        "date": 0,
+        "time": 0,
+        "traffic_volume": 4587,
+        "vehicle_count": 0,
+        "vehicle_type_dist": 0,
+        "avg_speed": 10,
+        "occupancy": 11,
+        "congestion_level": 681,
+        "travel_time": 0,
+        "accident_count": 0,
+        "signal_timing": 0,
+        "road_capacity": 0,
+        "weather_condition": 0,
+        "temperature": 0,
+        "rainfall": 0,
+        "visibility": 0,
+        "public_holiday": 0,
+        "holiday_name": 0,
+        "event_flag": 0,
+        "event_name": 0,
+        "roadwork_flag": 0
+      }
+    },
+    "outputs": {
+      "traffic": "data/interim/corrected_v2/20261102T172452/traffic_clean.csv",
+      "weather": "data/interim/corrected_v2/20261102T172452/weather_clean.csv",
+      "calendar": "data/interim/corrected_v2/20261102T172452/calendar_clean.csv",
+      "merged": "data/interim/corrected_v2/20261102T172452/flowcast_m2_merged.csv"
+    }
+  }
+}

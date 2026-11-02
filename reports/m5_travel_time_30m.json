@@ -1,0 +1,60 @@
+{
+    "experiment": "30-minute travel-time regression",
+    "target": "travel_time_t_plus_30",
+    "horizon_minutes": 30,
+    "selection_metric": "validation RMSE",
+    "test_data_used": false,
+    "results": [
+        {
+            "model": "XGBoost",
+            "target": "travel_time_t_plus_30",
+            "horizon_minutes": 30,
+            "configuration": {
+                "n_estimators": 400,
+                "max_depth": 6,
+                "learning_rate": 0.05
+            },
+            "mae": 0.4744357897703667,
+            "rmse": 1.1426689551740579,
+            "mape": 10.74694061751498
+        },
+        {
+            "model": "Random Forest",
+            "target": "travel_time_t_plus_30",
+            "horizon_minutes": 30,
+            "configuration": {
+                "n_estimators": 100,
+                "max_depth": 14,
+                "min_samples_leaf": 10
+            },
+            "mae": 0.46716540761697933,
+            "rmse": 1.1466495869426918,
+            "mape": 10.378344213578288
+        },
+        {
+            "model": "Decision Tree",
+            "target": "travel_time_t_plus_30",
+            "horizon_minutes": 30,
+            "configuration": {
+                "max_depth": 18,
+                "min_samples_leaf": 50
+            },
+            "mae": 0.4799167383576209,
+            "rmse": 1.1727221190062747,
+            "mape": 10.638884978142555
+        }
+    ],
+    "best_model": {
+        "model": "XGBoost",
+        "target": "travel_time_t_plus_30",
+        "horizon_minutes": 30,
+        "configuration": {
+            "n_estimators": 400,
+            "max_depth": 6,
+            "learning_rate": 0.05
+        },
+        "mae": 0.4744357897703667,
+        "rmse": 1.1426689551740579,
+        "mape": 10.74694061751498
+    }
+}

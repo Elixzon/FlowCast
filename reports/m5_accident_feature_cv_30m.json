@@ -1,0 +1,182 @@
+[
+  {
+    "fold": 1,
+    "experiment": "baseline_38",
+    "model": "Random Forest",
+    "train_rows": 59715,
+    "validation_rows": 19928,
+    "validation_positives": 177,
+    "roc_auc": 0.5895397701382208,
+    "pr_auc": 0.012970941736738205
+  },
+  {
+    "fold": 1,
+    "experiment": "baseline_38",
+    "model": "XGBoost",
+    "train_rows": 59715,
+    "validation_rows": 19928,
+    "validation_positives": 177,
+    "roc_auc": 0.5662335054479112,
+    "pr_auc": 0.011728390241121649
+  },
+  {
+    "fold": 1,
+    "experiment": "baseline_38",
+    "model": "Linear SVM",
+    "train_rows": 59715,
+    "validation_rows": 19928,
+    "validation_positives": 177,
+    "roc_auc": 0.6385759771299573,
+    "pr_auc": 0.018155152951728207
+  },
+  {
+    "fold": 1,
+    "experiment": "augmented_44",
+    "model": "Random Forest",
+    "train_rows": 59715,
+    "validation_rows": 19928,
+    "validation_positives": 177,
+    "roc_auc": 0.592839896256415,
+    "pr_auc": 0.01301016504018784
+  },
+  {
+    "fold": 1,
+    "experiment": "augmented_44",
+    "model": "XGBoost",
+    "train_rows": 59715,
+    "validation_rows": 19928,
+    "validation_positives": 177,
+    "roc_auc": 0.5611278496375925,
+    "pr_auc": 0.01164753963393499
+  },
+  {
+    "fold": 1,
+    "experiment": "augmented_44",
+    "model": "Linear SVM",
+    "train_rows": 59715,
+    "validation_rows": 19928,
+    "validation_positives": 177,
+    "roc_auc": 0.634947754915935,
+    "pr_auc": 0.018407324007151372
+  },
+  {
+    "fold": 2,
+    "experiment": "baseline_38",
+    "model": "Random Forest",
+    "train_rows": 79645,
+    "validation_rows": 19896,
+    "validation_positives": 207,
+    "roc_auc": 0.6252008588625592,
+    "pr_auc": 0.01830444535322414
+  },
+  {
+    "fold": 2,
+    "experiment": "baseline_38",
+    "model": "XGBoost",
+    "train_rows": 79645,
+    "validation_rows": 19896,
+    "validation_positives": 207,
+    "roc_auc": 0.6189296703841352,
+    "pr_auc": 0.017673504795910823
+  },
+  {
+    "fold": 2,
+    "experiment": "baseline_38",
+    "model": "Linear SVM",
+    "train_rows": 79645,
+    "validation_rows": 19896,
+    "validation_positives": 207,
+    "roc_auc": 0.6099612255598714,
+    "pr_auc": 0.023571656767236833
+  },
+  {
+    "fold": 2,
+    "experiment": "augmented_44",
+    "model": "Random Forest",
+    "train_rows": 79645,
+    "validation_rows": 19896,
+    "validation_positives": 207,
+    "roc_auc": 0.6262208256259229,
+    "pr_auc": 0.01755321814271353
+  },
+  {
+    "fold": 2,
+    "experiment": "augmented_44",
+    "model": "XGBoost",
+    "train_rows": 79645,
+    "validation_rows": 19896,
+    "validation_positives": 207,
+    "roc_auc": 0.628505138968938,
+    "pr_auc": 0.018807222927630433
+  },
+  {
+    "fold": 2,
+    "experiment": "augmented_44",
+    "model": "Linear SVM",
+    "train_rows": 79645,
+    "validation_rows": 19896,
+    "validation_positives": 207,
+    "roc_auc": 0.6156482088750603,
+    "pr_auc": 0.021587758216647327
+  },
+  {
+    "fold": 3,
+    "experiment": "baseline_38",
+    "model": "Random Forest",
+    "train_rows": 99541,
+    "validation_rows": 19923,
+    "validation_positives": 178,
+    "roc_auc": 0.5919897228995536,
+    "pr_auc": 0.013619143678220305
+  },
+  {
+    "fold": 3,
+    "experiment": "baseline_38",
+    "model": "XGBoost",
+    "train_rows": 99541,
+    "validation_rows": 19923,
+    "validation_positives": 178,
+    "roc_auc": 0.600808624570009,
+    "pr_auc": 0.014596883645322491
+  },
+  {
+    "fold": 3,
+    "experiment": "baseline_38",
+    "model": "Linear SVM",
+    "train_rows": 99541,
+    "validation_rows": 19923,
+    "validation_positives": 178,
+    "roc_auc": 0.6423816582778744,
+    "pr_auc": 0.02179959680537094
+  },
+  {
+    "fold": 3,
+    "experiment": "augmented_44",
+    "model": "Random Forest",
+    "train_rows": 99541,
+    "validation_rows": 19923,
+    "validation_positives": 178,
+    "roc_auc": 0.5965612116280327,
+    "pr_auc": 0.013297415331116193
+  },
+  {
+    "fold": 3,
+    "experiment": "augmented_44",
+    "model": "XGBoost",
+    "train_rows": 99541,
+    "validation_rows": 19923,
+    "validation_positives": 178,
+    "roc_auc": 0.6119301999368352,
+    "pr_auc": 0.014900621269438696
+  },
+  {
+    "fold": 3,
+    "experiment": "augmented_44",
+    "model": "Linear SVM",
+    "train_rows": 99541,
+    "validation_rows": 19923,
+    "validation_positives": 178,
+    "roc_auc": 0.6374095561100663,
+    "pr_auc": 0.021392829965095755
+  }
+]

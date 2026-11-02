@@ -1,0 +1,11 @@
+file,issue,count,severity,details
+traffic_sensor_log.csv,rows_in_duplicate_segment_time_groups,3534,warning,Key: road_id + date + time; M2 resolves duplicates.
+traffic_sensor_log.csv,missing_traffic_volume,4387,warning,
+traffic_sensor_log.csv,missing_avg_speed,4382,warning,
+traffic_sensor_log.csv,missing_occupancy,4383,warning,
+traffic_sensor_log.csv,missing_congestion_level,26883,warning,
+traffic_sensor_log.csv,negative_traffic_volume,241,warning,
+traffic_sensor_log.csv,avg_speed_above_200,237,warning,
+traffic_sensor_log.csv,occupancy_above_100,234,warning,
+weather_observations.csv,missing_temperature,167,warning,
+weather_observations.csv,missing_visibility,111,warning,

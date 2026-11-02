@@ -1,0 +1,89 @@
+# Python environments, bytecode, and test/tool caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.ipynb_checkpoints/
+notebooks/*_executed.ipynb
+
+# Local editor and operating-system files
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+secrets.toml
+
+# Temporary files and logs
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+
+# Supplied data is controlled input and must not be published.
+data/raw/*
+!data/raw/.gitkeep
+
+# Generated datasets can be several gigabytes; preserve only directory markers.
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Trained model binaries are generated locally and are not source artifacts.
+models/*
+!models/.gitkeep
+*.joblib
+*.pkl
+*.pickle
+*.keras
+*.h5
+*.weights.h5
+
+# Quarantines contain row-level source data; do not publish them.
+reports/quarantine/
+**/quarantine/
+
+# Supplied project specifications may be controlled or copyrighted documents.
+references/*.docx
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+
+# Exclude older corrected experiment runs
+reports/corrected_v2/*
+!reports/corrected_v2/20261102T172452/
+!reports/corrected_v2/latest.json
+
+# Keep only the final corrected experiment's reports

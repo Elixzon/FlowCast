@@ -1,0 +1,15 @@
+{
+  "run_id": "20261102T172452",
+  "manifest": "reports/corrected_v2/20261102T172452/run_manifest.json",
+  "paths": {
+    "interim_dir": "data/interim/corrected_v2/20261102T172452",
+    "processed_dir": "data/processed/corrected_v2/20261102T172452",
+    "m5_model_dir": "models/m5/corrected_v2/20261102T172452",
+    "m6_model_dir": "models/m6/corrected_v2/20261102T172452",
+    "report_dir": "reports/corrected_v2/20261102T172452",
+    "m5_split_dir": "data/processed/corrected_v2/20261102T172452/m5_splits",
+    "m5_preprocessed_dir": "data/processed/corrected_v2/20261102T172452/m5_preprocessed",
+    "m6_sequence_dir": "data/processed/corrected_v2/20261102T172452/m6_sequences"
+  },
+  "completed_at_utc": "2026-11-02T12:40:36.180558+00:00"
+}

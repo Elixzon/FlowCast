@@ -1,0 +1,37 @@
+{
+    "model": "Linear Support Vector Regression",
+    "target": "traffic_volume_t_plus_30",
+    "horizon_minutes": 30,
+    "selection_metric": "validation RMSE",
+    "best_configuration": {
+        "C": 10.0,
+        "epsilon": 0.1,
+        "mae": 64.20739989047107,
+        "rmse": 90.56321967390633,
+        "mape": 16.89306008725083
+    },
+    "all_configurations": [
+        {
+            "C": 0.1,
+            "epsilon": 0.1,
+            "mae": 66.34653211240673,
+            "rmse": 94.06989452410201,
+            "mape": 17.22080355350077
+        },
+        {
+            "C": 1.0,
+            "epsilon": 0.1,
+            "mae": 64.30452319097289,
+            "rmse": 90.84360224525723,
+            "mape": 16.865485299431242
+        },
+        {
+            "C": 10.0,
+            "epsilon": 0.1,
+            "mae": 64.20739989047107,
+            "rmse": 90.56321967390633,
+            "mape": 16.89306008725083
+        }
+    ],
+    "test_data_used": false
+}

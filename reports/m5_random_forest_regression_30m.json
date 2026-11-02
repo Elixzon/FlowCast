@@ -1,0 +1,41 @@
+{
+    "model": "Random Forest Regression",
+    "target": "traffic_volume_t_plus_30",
+    "horizon_minutes": 30,
+    "selection_metric": "validation RMSE",
+    "best_configuration": {
+        "n_estimators": 100,
+        "max_depth": 14,
+        "min_samples_leaf": 10,
+        "mae": 44.70179002131585,
+        "rmse": 70.67396739310031,
+        "mape": 11.005205151040995
+    },
+    "all_configurations": [
+        {
+            "n_estimators": 100,
+            "max_depth": 14,
+            "min_samples_leaf": 10,
+            "mae": 44.70179002131585,
+            "rmse": 70.67396739310031,
+            "mape": 11.005205151040995
+        },
+        {
+            "n_estimators": 150,
+            "max_depth": 18,
+            "min_samples_leaf": 10,
+            "mae": 44.57911867361296,
+            "rmse": 70.75557177012614,
+            "mape": 10.942818279084715
+        },
+        {
+            "n_estimators": 200,
+            "max_depth": 18,
+            "min_samples_leaf": 20,
+            "mae": 44.72325178903344,
+            "rmse": 70.91853610161907,
+            "mape": 10.993641825996828
+        }
+    ],
+    "test_data_used": false
+}

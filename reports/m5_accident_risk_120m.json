@@ -1,0 +1,104 @@
+{
+    "experiment": "120-minute accident-risk classification",
+    "target": "accident_risk_t_plus_120",
+    "horizon_minutes": 120,
+    "selection_metric": "validation ROC-AUC",
+    "test_data_used": false,
+    "results": [
+        {
+            "model": "Random Forest",
+            "accuracy": 0.9894096307998361,
+            "roc_auc": 0.578016668000339,
+            "pr_auc": 0.012429819922274194,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "confusion_matrix": [
+                [
+                    16910,
+                    32
+                ],
+                [
+                    149,
+                    0
+                ]
+            ]
+        },
+        {
+            "model": "XGBoost",
+            "accuracy": 0.9051547598151074,
+            "roc_auc": 0.5627062405570049,
+            "pr_auc": 0.013230515430378655,
+            "precision": 0.013870541611624834,
+            "recall": 0.14093959731543623,
+            "f1": 0.025255562236921228,
+            "confusion_matrix": [
+                [
+                    15449,
+                    1493
+                ],
+                [
+                    128,
+                    21
+                ]
+            ]
+        },
+        {
+            "model": "Linear SVM",
+            "accuracy": 0.594230881750629,
+            "roc_auc": 0.5601214249325968,
+            "pr_auc": 0.010618829564654514,
+            "precision": 0.01151742009789807,
+            "recall": 0.5369127516778524,
+            "f1": 0.02255109231853418,
+            "confusion_matrix": [
+                [
+                    10076,
+                    6866
+                ],
+                [
+                    69,
+                    80
+                ]
+            ]
+        },
+        {
+            "model": "Decision Tree",
+            "accuracy": 0.7207302088818677,
+            "roc_auc": 0.5234257581531622,
+            "pr_auc": 0.009612838115124023,
+            "precision": 0.01037695891571368,
+            "recall": 0.3288590604026846,
+            "f1": 0.020119072059125435,
+            "confusion_matrix": [
+                [
+                    12269,
+                    4673
+                ],
+                [
+                    100,
+                    49
+                ]
+            ]
+        }
+    ],
+    "best_model": {
+        "model": "Random Forest",
+        "accuracy": 0.9894096307998361,
+        "roc_auc": 0.578016668000339,
+        "pr_auc": 0.012429819922274194,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion_matrix": [
+            [
+                16910,
+                32
+            ],
+            [
+                149,
+                0
+            ]
+        ]
+    }
+}

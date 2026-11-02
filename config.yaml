@@ -1,0 +1,20 @@
+project:
+  name: FlowCast
+  version: "1.0"
+  random_seed: 42
+  timezone: "UTC"
+data:
+  raw_dir: "data/raw"
+  interim_dir: "data/interim"
+  processed_dir: "data/processed"
+  traffic_key: ["road_id", "date", "time"]
+  weather_key: ["weather_station_id", "date", "time"]
+  calendar_key: ["date"]
+targets:
+  volume: "traffic_volume"
+  congestion: "congestion_level"
+  accident_basis: "accident_count"
+validation:
+  split: "time_based"
+  test_fraction: 0.20
+  no_random_split: true

@@ -1,0 +1,100 @@
+{
+    "model": "Decision Tree Regression",
+    "target": "traffic_volume_t_plus_30",
+    "horizon_minutes": 30,
+    "selection_metric": "validation RMSE",
+    "best_configuration": {
+        "max_depth": 18,
+        "min_samples_leaf": 50,
+        "mae": 47.74953862146735,
+        "rmse": 75.42403946674341,
+        "mape": 11.841718064938785
+    },
+    "all_configurations": [
+        {
+            "max_depth": 6,
+            "min_samples_leaf": 20,
+            "mae": 60.223714160490246,
+            "rmse": 89.73206575777807,
+            "mape": 14.816130312667807
+        },
+        {
+            "max_depth": 6,
+            "min_samples_leaf": 50,
+            "mae": 60.22271976941546,
+            "rmse": 89.73375316597011,
+            "mape": 14.816297701699405
+        },
+        {
+            "max_depth": 6,
+            "min_samples_leaf": 100,
+            "mae": 60.07385337111483,
+            "rmse": 89.57205899960378,
+            "mape": 14.795972373216973
+        },
+        {
+            "max_depth": 10,
+            "min_samples_leaf": 20,
+            "mae": 50.42227607097531,
+            "rmse": 78.37724164037965,
+            "mape": 12.419641921251493
+        },
+        {
+            "max_depth": 10,
+            "min_samples_leaf": 50,
+            "mae": 50.6526196773817,
+            "rmse": 78.8786399882298,
+            "mape": 12.466026337373101
+        },
+        {
+            "max_depth": 10,
+            "min_samples_leaf": 100,
+            "mae": 50.75496269152661,
+            "rmse": 78.92830626413188,
+            "mape": 12.489198901830283
+        },
+        {
+            "max_depth": 14,
+            "min_samples_leaf": 20,
+            "mae": 48.2278349053709,
+            "rmse": 75.87035928919693,
+            "mape": 11.97887254140104
+        },
+        {
+            "max_depth": 14,
+            "min_samples_leaf": 50,
+            "mae": 47.81414299969616,
+            "rmse": 75.63516260581441,
+            "mape": 11.861434506921606
+        },
+        {
+            "max_depth": 14,
+            "min_samples_leaf": 100,
+            "mae": 48.251684962919875,
+            "rmse": 75.92326365486535,
+            "mape": 11.971018149304385
+        },
+        {
+            "max_depth": 18,
+            "min_samples_leaf": 20,
+            "mae": 49.0042225733126,
+            "rmse": 77.18087578080907,
+            "mape": 12.132326671040557
+        },
+        {
+            "max_depth": 18,
+            "min_samples_leaf": 50,
+            "mae": 47.74953862146735,
+            "rmse": 75.42403946674341,
+            "mape": 11.841718064938785
+        },
+        {
+            "max_depth": 18,
+            "min_samples_leaf": 100,
+            "mae": 48.116087887392474,
+            "rmse": 75.60605472354871,
+            "mape": 11.934017709869137
+        }
+    ],
+    "test_data_used": false
+}

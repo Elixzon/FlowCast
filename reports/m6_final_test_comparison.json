@@ -1,0 +1,38 @@
+{
+  "evaluation": "Final untouched test comparison",
+  "horizon_minutes": 30,
+  "test_samples": 9573,
+  "sequence_length": 48,
+  "features_per_step": 67,
+  "target": "traffic_volume_t_plus_30",
+  "same_test_samples_for_all_models": true,
+  "preprocessing_fit_on_training_only": true,
+  "models": [
+    {
+      "model": "XGBoost",
+      "test_samples": 9573,
+      "MAE": 40.23392299403844,
+      "RMSE": 59.04948235566377,
+      "MAPE_percent": 9.602407779421016,
+      "R2": 0.9578957368948051
+    },
+    {
+      "model": "LSTM",
+      "test_samples": 9573,
+      "MAE": 39.76900011646602,
+      "RMSE": 58.72313325430039,
+      "MAPE_percent": 9.440119169810874,
+      "R2": 0.958359846570686
+    },
+    {
+      "model": "GRU",
+      "test_samples": 9573,
+      "MAE": 40.28834119446285,
+      "RMSE": 59.28936942369414,
+      "MAPE_percent": 10.114571926097442,
+      "R2": 0.9575529469542462
+    }
+  ],
+  "best_by_rmse": "LSTM",
+  "best_by_mae": "LSTM"
+}

@@ -1,0 +1,356 @@
+{
+  "task": "accident_risk",
+  "horizon_minutes": 90,
+  "target": "accident_risk_t_plus_90",
+  "selected_model": "Random Forest",
+  "selection_metric": "validation PR-AUC",
+  "selected_validation_metrics": {
+    "accuracy": 0.9744657230086039,
+    "macro_precision": 0.5110283717447375,
+    "macro_recall": 0.5264835164835165,
+    "macro_f1": 0.5143635724331928,
+    "confusion_matrix": [
+      [
+        7018,
+        132
+      ],
+      [
+        52,
+        4
+      ]
+    ],
+    "class_labels": [
+      "0",
+      "1"
+    ],
+    "positive_precision": 0.029411764705882353,
+    "positive_recall": 0.07142857142857142,
+    "positive_f1": 0.041666666666666664,
+    "ROC_AUC": 0.5137137862137862,
+    "PR_AUC": 0.011216679331366252,
+    "fit_seconds": 5.638661172008142,
+    "selection_score": 0.011216679331366252
+  },
+  "validation_candidate_results": [
+    {
+      "model": "Decision Tree",
+      "metrics": {
+        "accuracy": 0.9908409658617818,
+        "macro_precision": 0.5378440366972477,
+        "macro_recall": 0.5081593406593407,
+        "macro_f1": 0.5124052688560087,
+        "confusion_matrix": [
+          [
+            7139,
+            11
+          ],
+          [
+            55,
+            1
+          ]
+        ],
+        "class_labels": [
+          "0",
+          "1"
+        ],
+        "positive_precision": 0.08333333333333333,
+        "positive_recall": 0.017857142857142856,
+        "positive_f1": 0.029411764705882353,
+        "ROC_AUC": 0.5406543456543457,
+        "PR_AUC": 0.010205134302029205,
+        "fit_seconds": 3.577492932905443,
+        "selection_score": 0.010205134302029205
+      },
+      "threshold": 0.9862912551024671
+    },
+    {
+      "model": "Random Forest",
+      "metrics": {
+        "accuracy": 0.9744657230086039,
+        "macro_precision": 0.5110283717447375,
+        "macro_recall": 0.5264835164835165,
+        "macro_f1": 0.5143635724331928,
+        "confusion_matrix": [
+          [
+            7018,
+            132
+          ],
+          [
+            52,
+            4
+          ]
+        ],
+        "class_labels": [
+          "0",
+          "1"
+        ],
+        "positive_precision": 0.029411764705882353,
+        "positive_recall": 0.07142857142857142,
+        "positive_f1": 0.041666666666666664,
+        "ROC_AUC": 0.5137137862137862,
+        "PR_AUC": 0.011216679331366252,
+        "fit_seconds": 5.638661172008142,
+        "selection_score": 0.011216679331366252
+      },
+      "threshold": 0.28361608716035336
+    },
+    {
+      "model": "Linear SVM",
+      "metrics": {
+        "accuracy": 0.9436580627255066,
+        "macro_precision": 0.5032196416398871,
+        "macro_recall": 0.5198176823176823,
+        "macro_f1": 0.49751508672807615,
+        "confusion_matrix": [
+          [
+            6795,
+            355
+          ],
+          [
+            51,
+            5
+          ]
+        ],
+        "class_labels": [
+          "0",
+          "1"
+        ],
+        "positive_precision": 0.013888888888888888,
+        "positive_recall": 0.08928571428571429,
+        "positive_f1": 0.02403846153846154,
+        "ROC_AUC": 0.5669005994005994,
+        "PR_AUC": 0.009836898375752405,
+        "fit_seconds": 2.8718266600044444,
+        "selection_score": 0.009836898375752405
+      },
+      "threshold": 0.35691258504127876
+    },
+    {
+      "model": "XGBoost",
+      "metrics": {
+        "accuracy": 0.917985012489592,
+        "macro_precision": 0.5055508824115049,
+        "macro_recall": 0.5511738261738262,
+        "macro_f1": 0.49495512019041765,
+        "confusion_matrix": [
+          [
+            6605,
+            545
+          ],
+          [
+            46,
+            10
+          ]
+        ],
+        "class_labels": [
+          "0",
+          "1"
+        ],
+        "positive_precision": 0.018018018018018018,
+        "positive_recall": 0.17857142857142858,
+        "positive_f1": 0.03273322422258593,
+        "ROC_AUC": 0.5430394605394606,
+        "PR_AUC": 0.01013985566478319,
+        "fit_seconds": 1.9028234940487891,
+        "selection_score": 0.01013985566478319
+      },
+      "threshold": 0.5555345416069031
+    },
+    {
+      "model": "XGBoost (shallow)",
+      "metrics": {
+        "accuracy": 0.9571190674437968,
+        "macro_precision": 0.507718968230884,
+        "macro_recall": 0.5354595404595405,
+        "macro_f1": 0.5077271433943717,
+        "confusion_matrix": [
+          [
+            6891,
+            259
+          ],
+          [
+            50,
+            6
+          ]
+        ],
+        "class_labels": [
+          "0",
+          "1"
+        ],
+        "positive_precision": 0.022641509433962263,
+        "positive_recall": 0.10714285714285714,
+        "positive_f1": 0.037383177570093455,
+        "ROC_AUC": 0.5417507492507493,
+        "PR_AUC": 0.010687354016268153,
+        "fit_seconds": 2.2192352259298787,
+        "selection_score": 0.010687354016268153
+      },
+      "threshold": 0.6285740733146667
+    },
+    {
+      "model": "XGBoost (extra positive weight)",
+      "metrics": {
+        "accuracy": 0.9369969469886206,
+        "macro_precision": 0.5036384386798547,
+        "macro_recall": 0.5253196803196803,
+        "macro_f1": 0.4965984677871545,
+        "confusion_matrix": [
+          [
+            6746,
+            404
+          ],
+          [
+            50,
+            6
+          ]
+        ],
+        "class_labels": [
+          "0",
+          "1"
+        ],
+        "positive_precision": 0.014634146341463415,
+        "positive_recall": 0.10714285714285714,
+        "positive_f1": 0.02575107296137339,
+        "ROC_AUC": 0.5529495504495504,
+        "PR_AUC": 0.009509097995754412,
+        "fit_seconds": 1.835227943956852,
+        "selection_score": 0.009509097995754412
+      },
+      "threshold": 0.7255479097366333
+    }
+  ],
+  "validation_selection_period": {
+    "start": "2025-04-16 16:30:00",
+    "end": "2025-04-27 04:30:00"
+  },
+  "validation_calibration_period": {
+    "start": "2025-04-27 05:00:00",
+    "end": "2025-05-01 17:00:00"
+  },
+  "validation_calibration_rows": 2949,
+  "target_class_counts": {
+    "train": {
+      "0": 70795,
+      "1": 656
+    },
+    "validation_selection": {
+      "0": 7150,
+      "1": 56
+    },
+    "validation_calibration": {
+      "0": 2927,
+      "1": 22
+    },
+    "test": {
+      "0": 20059,
+      "1": 215
+    }
+  },
+  "test_rows": 20274,
+  "test_metrics": {
+    "accuracy": 0.9751898983920292,
+    "macro_precision": 0.5079751205756002,
+    "macro_recall": 0.5112264169537075,
+    "macro_f1": 0.5091313133238518,
+    "confusion_matrix": [
+      [
+        19763,
+        296
+      ],
+      [
+        207,
+        8
+      ]
+    ],
+    "class_labels": [
+      "0",
+      "1"
+    ],
+    "positive_precision": 0.02631578947368421,
+    "positive_recall": 0.037209302325581395,
+    "positive_f1": 0.030828516377649325,
+    "ROC_AUC": 0.5500378534486057,
+    "PR_AUC": 0.019062461291553385,
+    "operating_threshold": 0.28361608716035336,
+    "evaluation_seconds": 0.1505126360571012
+  },
+  "training_rows": 71451,
+  "validation_rows": 10155,
+  "periods": {
+    "train": {
+      "start": "2025-01-02 00:00:00",
+      "end": "2025-04-16 14:30:00",
+      "rows_before_feature_filter": 71451
+    },
+    "validation": {
+      "start": "2025-04-16 16:30:00",
+      "end": "2025-05-01 17:00:00",
+      "rows_before_feature_filter": 10155
+    },
+    "test": {
+      "start": "2025-05-01 19:00:00",
+      "end": "2025-05-31 22:00:00",
+      "rows_before_feature_filter": 20274
+    }
+  },
+  "features": [
+    "road_id",
+    "latitude",
+    "longitude",
+    "road_capacity",
+    "weather_condition",
+    "temperature_band",
+    "temperature",
+    "rainfall",
+    "visibility",
+    "public_holiday",
+    "event_flag",
+    "roadwork_flag",
+    "hour",
+    "day_of_week",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week_sin",
+    "day_of_week_cos",
+    "is_weekend",
+    "is_peak_period",
+    "rain_flag",
+    "low_visibility_flag",
+    "holiday_peak_interaction",
+    "traffic_volume",
+    "vehicle_count",
+    "avg_speed",
+    "occupancy",
+    "congestion_level",
+    "travel_time",
+    "accident_count",
+    "signal_timing",
+    "traffic_volume_lag_1",
+    "traffic_volume_lag_2",
+    "traffic_volume_lag_48",
+    "traffic_volume_rolling_mean_4",
+    "traffic_volume_rolling_std_4",
+    "traffic_volume_rolling_mean_8",
+    "traffic_volume_rolling_std_8",
+    "avg_speed_lag_1",
+    "avg_speed_lag_2",
+    "avg_speed_lag_48",
+    "avg_speed_rolling_mean_4",
+    "avg_speed_rolling_std_4",
+    "avg_speed_rolling_mean_8",
+    "avg_speed_rolling_std_8"
+  ],
+  "validation_candidate_artifact": null,
+  "preprocessing": "Median imputation and standard scaling for numeric inputs; OneHotEncoder(handle_unknown='ignore') for categories. All transformers fit on training rows only.",
+  "artifact_path": "models/m5/corrected_v2/20261102T172452/accident_risk_90m.joblib",
+  "test_partition_used_for_selection": false,
+  "software_versions": {
+    "python": "3.11.18",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "scipy": "1.15.3",
+    "scikit_learn": "1.6.1",
+    "xgboost": "2.1.4"
+  },
+  "random_seed": 42
+}

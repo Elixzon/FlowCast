@@ -1,0 +1,47 @@
+[
+    {
+        "rank_by_RMSE":1,
+        "model":"XGBoost",
+        "MAE":43.9959038541,
+        "RMSE":65.7338360132,
+        "MAPE_percent":11.1031997657,
+        "target":"traffic_volume_t_plus_30",
+        "horizon_minutes":30
+    },
+    {
+        "rank_by_RMSE":2,
+        "model":"Random Forest",
+        "MAE":44.7017900213,
+        "RMSE":70.6739673931,
+        "MAPE_percent":11.005205151,
+        "target":"traffic_volume_t_plus_30",
+        "horizon_minutes":30
+    },
+    {
+        "rank_by_RMSE":3,
+        "model":"Decision Tree",
+        "MAE":47.7495386215,
+        "RMSE":75.4240394667,
+        "MAPE_percent":11.8417180649,
+        "target":"traffic_volume_t_plus_30",
+        "horizon_minutes":30
+    },
+    {
+        "rank_by_RMSE":4,
+        "model":"Linear SVR",
+        "MAE":64.2073998905,
+        "RMSE":90.5632196739,
+        "MAPE_percent":16.8930600873,
+        "target":"traffic_volume_t_plus_30",
+        "horizon_minutes":30
+    },
+    {
+        "rank_by_RMSE":5,
+        "model":"NumPy Linear Regression",
+        "MAE":71.4148158481,
+        "RMSE":93.8306543428,
+        "MAPE_percent":21.6390314229,
+        "target":"traffic_volume_t_plus_30",
+        "horizon_minutes":30
+    }
+]

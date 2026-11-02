@@ -1,0 +1,12 @@
+{
+  "model": "LSTM",
+  "target": "traffic_volume_t_plus_30",
+  "partition": "validation",
+  "epochs_completed": 24,
+  "best_epoch": 16,
+  "MAE": 37.97560501098633,
+  "RMSE": 54.9877094754762,
+  "MAPE_percent": 9.268689155578613,
+  "R2": 0.9606157541275024,
+  "test_used": false
+}

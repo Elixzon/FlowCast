@@ -1,0 +1,135 @@
+{
+  "module": "M4 - Exploratory Data Analysis",
+  "input": "data/processed/flowcast_m3_features.csv",
+  "rows": 176701,
+  "columns": 60,
+  "road_segments": 25,
+  "date_start": "2025-01-01 00:00:00",
+  "date_end": "2025-05-31 23:30:00",
+  "duplicate_road_time_keys": 0,
+  "total_null_cells": 3750,
+  "null_counts": {
+    "traffic_volume_lag_1": 25,
+    "traffic_volume_lag_2": 50,
+    "traffic_volume_lag_48": 1200,
+    "traffic_volume_rolling_mean_4": 100,
+    "traffic_volume_rolling_std_4": 100,
+    "traffic_volume_rolling_mean_8": 200,
+    "traffic_volume_rolling_std_8": 200,
+    "avg_speed_lag_1": 25,
+    "avg_speed_lag_2": 50,
+    "avg_speed_lag_48": 1200,
+    "avg_speed_rolling_mean_4": 100,
+    "avg_speed_rolling_std_4": 100,
+    "avg_speed_rolling_mean_8": 200,
+    "avg_speed_rolling_std_8": 200
+  },
+  "traffic_volume": {
+    "mean": 431.43982065749486,
+    "median": 362.0,
+    "std": 283.20769499864326,
+    "min": 41.0,
+    "max": 2090.0
+  },
+  "avg_speed": {
+    "mean": 42.10495229229036,
+    "median": 44.9,
+    "min": 6.7,
+    "max": 64.8
+  },
+  "congestion_distribution": {
+    "Free-flow": 108544,
+    "Moderate": 42098,
+    "Heavy": 16311,
+    "Severe": 9748
+  },
+  "weather_distribution": {
+    "Clear": 132715,
+    "Cloudy": 35779,
+    "Rain": 6959,
+    "Fog": 1248
+  },
+  "correlation_with_traffic_volume": {
+    "vehicle_count": 0.9993106619037041,
+    "volume_capacity_ratio": 0.9486810277232038,
+    "occupancy": 0.9380752857301523,
+    "traffic_volume_lag_1": 0.9327524393163499,
+    "traffic_volume_lag_2": 0.8354383627073482,
+    "traffic_volume_rolling_mean_4": 0.7930357910554288,
+    "traffic_volume_lag_48": 0.7901518115099947,
+    "signal_timing": 0.760748078085178,
+    "is_peak_period": 0.7162038427023777,
+    "traffic_volume_rolling_std_4": 0.6350876775918686,
+    "vehicle_share_car": 0.594412697545223,
+    "traffic_volume_rolling_mean_8": 0.5614088850699445,
+    "travel_time": 0.5350342307903022,
+    "avg_speed_rolling_std_4": 0.5199360302781585,
+    "traffic_volume_rolling_std_8": 0.5170510732182251,
+    "avg_speed_rolling_std_8": 0.43895474347508673,
+    "temperature": 0.3865839569721099,
+    "road_capacity": 0.2658075737164335,
+    "hour": 0.22015862834076738,
+    "day_of_week_sin": 0.16065425678818696,
+    "event_flag": 0.13317832536447505,
+    "event_proximity_flag": 0.08313777343813475,
+    "visibility": 0.0722225794933784,
+    "longitude": 0.07110373644044864,
+    "accident_count": 0.034917966258236774,
+    "latitude": 0.025006904466740247,
+    "vehicle_share_lcv": -0.0013731120667726062,
+    "holiday_peak_interaction": -0.02281805102206098,
+    "day_of_week_cos": -0.035620702023854076,
+    "rainfall": -0.037777542299678016,
+    "rain_flag": -0.04612812524310693,
+    "low_visibility_flag": -0.05846124292128775,
+    "roadwork_flag": -0.11069317189509141,
+    "hour_sin": -0.15569401050926865,
+    "public_holiday": -0.1562119307717638,
+    "day_of_week": -0.17997328125322568,
+    "is_weekend": -0.22911288499906846,
+    "avg_speed_rolling_mean_8": -0.44710789259699485,
+    "vehicle_share_hcv": -0.5168399652301413,
+    "hour_cos": -0.5290549375265132,
+    "vehicle_share_2w": -0.5406561073625947,
+    "avg_speed_lag_48": -0.6794186491461821,
+    "avg_speed_rolling_mean_4": -0.6887591817444633,
+    "avg_speed_lag_2": -0.7188802351141185,
+    "avg_speed_lag_1": -0.8230158266523958,
+    "capacity_headroom": -0.8358900068918735,
+    "avg_speed": -0.896304861562802
+  },
+  "figures": [
+    "01_traffic_volume_distribution.png",
+    "02_congestion_distribution.png",
+    "03_speed_distribution.png",
+    "04_hourly_traffic_pattern.png",
+    "05_weekday_traffic_pattern.png",
+    "06_road_segment_comparison.png",
+    "07_weather_vs_traffic.png",
+    "08_correlation_heatmap.png",
+    "09_congestion_by_hour.png",
+    "10_volume_vs_speed.png"
+  ],
+  "weather_traffic_summary": {
+    "Clear": {
+      "mean": 437.3855699556694,
+      "median": 367.0,
+      "count": 132715
+    },
+    "Cloudy": {
+      "mean": 429.0143287030567,
+      "median": 361.0,
+      "count": 35779
+    },
+    "Fog": {
+      "mean": 219.41346153846155,
+      "median": 181.5,
+      "count": 1248
+    },
+    "Rain": {
+      "mean": 368.5429180437802,
+      "median": 332.0,
+      "count": 6959
+    }
+  }
+}

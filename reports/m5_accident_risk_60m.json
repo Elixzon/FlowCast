@@ -1,0 +1,104 @@
+{
+    "experiment": "60-minute accident-risk classification",
+    "target": "accident_risk_t_plus_60",
+    "horizon_minutes": 60,
+    "selection_metric": "validation ROC-AUC",
+    "test_data_used": false,
+    "results": [
+        {
+            "model": "Linear SVM",
+            "accuracy": 0.5895909913063773,
+            "roc_auc": 0.5734770946984211,
+            "pr_auc": 0.012219486279947636,
+            "precision": 0.011216811018032088,
+            "recall": 0.5302013422818792,
+            "f1": 0.02196885428253615,
+            "confusion_matrix": [
+                [
+                    10026,
+                    6964
+                ],
+                [
+                    70,
+                    79
+                ]
+            ]
+        },
+        {
+            "model": "Random Forest",
+            "accuracy": 0.9823793686912888,
+            "roc_auc": 0.5660901991301633,
+            "pr_auc": 0.01368159648275671,
+            "precision": 0.03067484662576687,
+            "recall": 0.03355704697986577,
+            "f1": 0.03205128205128205,
+            "confusion_matrix": [
+                [
+                    16832,
+                    158
+                ],
+                [
+                    144,
+                    5
+                ]
+            ]
+        },
+        {
+            "model": "XGBoost",
+            "accuracy": 0.8935760546122877,
+            "roc_auc": 0.5499541775462076,
+            "pr_auc": 0.014855106217853298,
+            "precision": 0.015055008685581933,
+            "recall": 0.174496644295302,
+            "f1": 0.02771855010660981,
+            "confusion_matrix": [
+                [
+                    15289,
+                    1701
+                ],
+                [
+                    123,
+                    26
+                ]
+            ]
+        },
+        {
+            "model": "Decision Tree",
+            "accuracy": 0.6956065114650797,
+            "roc_auc": 0.5162393196155655,
+            "pr_auc": 0.009668039158697038,
+            "precision": 0.010432766615146832,
+            "recall": 0.3624161073825503,
+            "f1": 0.02028169014084507,
+            "confusion_matrix": [
+                [
+                    11868,
+                    5122
+                ],
+                [
+                    95,
+                    54
+                ]
+            ]
+        }
+    ],
+    "best_model": {
+        "model": "Linear SVM",
+        "accuracy": 0.5895909913063773,
+        "roc_auc": 0.5734770946984211,
+        "pr_auc": 0.012219486279947636,
+        "precision": 0.011216811018032088,
+        "recall": 0.5302013422818792,
+        "f1": 0.02196885428253615,
+        "confusion_matrix": [
+            [
+                10026,
+                6964
+            ],
+            [
+                70,
+                79
+            ]
+        ]
+    }
+}

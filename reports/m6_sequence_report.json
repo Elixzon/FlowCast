@@ -1,0 +1,123 @@
+{
+  "sequence_length": 48,
+  "target": "traffic_volume_t_plus_30",
+  "scaler_fit": "training partition only",
+  "feature_count": 67,
+  "feature_names": [
+    "latitude",
+    "longitude",
+    "road_capacity",
+    "temperature",
+    "rainfall",
+    "visibility",
+    "public_holiday",
+    "event_flag",
+    "roadwork_flag",
+    "hour",
+    "day_of_week",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week_sin",
+    "day_of_week_cos",
+    "is_weekend",
+    "is_peak_period",
+    "rain_flag",
+    "low_visibility_flag",
+    "holiday_peak_interaction",
+    "event_proximity_flag",
+    "traffic_volume_lag_1",
+    "traffic_volume_lag_2",
+    "traffic_volume_lag_48",
+    "traffic_volume_rolling_mean_4",
+    "traffic_volume_rolling_std_4",
+    "traffic_volume_rolling_mean_8",
+    "traffic_volume_rolling_std_8",
+    "avg_speed_lag_1",
+    "avg_speed_lag_2",
+    "avg_speed_lag_48",
+    "avg_speed_rolling_mean_4",
+    "avg_speed_rolling_std_4",
+    "avg_speed_rolling_mean_8",
+    "avg_speed_rolling_std_8",
+    "road_id_NL-001",
+    "road_id_NL-002",
+    "road_id_NL-003",
+    "road_id_NL-004",
+    "road_id_NL-005",
+    "road_id_NL-006",
+    "road_id_NL-007",
+    "road_id_NL-008",
+    "road_id_NL-009",
+    "road_id_NL-010",
+    "road_id_NL-011",
+    "road_id_NL-012",
+    "road_id_NL-013",
+    "road_id_NL-014",
+    "road_id_NL-015",
+    "road_id_NL-016",
+    "road_id_NL-017",
+    "road_id_NL-018",
+    "road_id_NL-019",
+    "road_id_NL-020",
+    "road_id_NL-021",
+    "road_id_NL-022",
+    "road_id_NL-023",
+    "road_id_NL-024",
+    "road_id_NL-025",
+    "weather_condition_Clear",
+    "weather_condition_Cloudy",
+    "weather_condition_Fog",
+    "weather_condition_Rain",
+    "temperature_band_Cool",
+    "temperature_band_Moderate",
+    "temperature_band_Warm"
+  ],
+  "road_segments": 25,
+  "source_rows": 172241,
+  "gap_rejections": {
+    "train": 81766,
+    "validation": 11177,
+    "test": 23668
+  },
+  "split_counts": {
+    "train": {
+      "sequences": 37459,
+      "X_shape": [
+        37459,
+        48,
+        67
+      ],
+      "y_shape": [
+        37459
+      ],
+      "non_finite_X": 0,
+      "non_finite_y": 0
+    },
+    "validation": {
+      "sequences": 4814,
+      "X_shape": [
+        4814,
+        48,
+        67
+      ],
+      "y_shape": [
+        4814
+      ],
+      "non_finite_X": 0,
+      "non_finite_y": 0
+    },
+    "test": {
+      "sequences": 9573,
+      "X_shape": [
+        9573,
+        48,
+        67
+      ],
+      "y_shape": [
+        9573
+      ],
+      "non_finite_X": 0,
+      "non_finite_y": 0
+    }
+  }
+}

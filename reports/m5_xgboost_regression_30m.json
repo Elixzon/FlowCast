@@ -1,0 +1,41 @@
+{
+    "model": "XGBoost Regression",
+    "target": "traffic_volume_t_plus_30",
+    "horizon_minutes": 30,
+    "selection_metric": "validation RMSE",
+    "best_configuration": {
+        "n_estimators": 400,
+        "max_depth": 6,
+        "learning_rate": 0.05,
+        "mae": 43.99590385410641,
+        "rmse": 65.73383601324439,
+        "mape": 11.103199765681152
+    },
+    "all_configurations": [
+        {
+            "n_estimators": 300,
+            "max_depth": 5,
+            "learning_rate": 0.05,
+            "mae": 44.694712042590936,
+            "rmse": 66.08995270002693,
+            "mape": 11.27513837016243
+        },
+        {
+            "n_estimators": 400,
+            "max_depth": 6,
+            "learning_rate": 0.05,
+            "mae": 43.99590385410641,
+            "rmse": 65.73383601324439,
+            "mape": 11.103199765681152
+        },
+        {
+            "n_estimators": 500,
+            "max_depth": 6,
+            "learning_rate": 0.03,
+            "mae": 44.188454656546504,
+            "rmse": 66.04720834067945,
+            "mape": 11.163182551951984
+        }
+    ],
+    "test_data_used": false
+}

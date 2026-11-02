@@ -1,0 +1,379 @@
+{
+  "task": "congestion_level",
+  "horizon_minutes": 60,
+  "target": "congestion_level_t_plus_60",
+  "selected_model": "Random Forest",
+  "selection_metric": "validation macro-F1",
+  "selected_validation_metrics": {
+    "accuracy": 0.8555201551461421,
+    "macro_precision": 0.7363651883870965,
+    "macro_recall": 0.7662179677796133,
+    "macro_f1": 0.7499645515324418,
+    "confusion_matrix": [
+      [
+        3970,
+        357,
+        1,
+        0
+      ],
+      [
+        97,
+        1495,
+        186,
+        4
+      ],
+      [
+        0,
+        112,
+        427,
+        166
+      ],
+      [
+        0,
+        2,
+        118,
+        284
+      ]
+    ],
+    "class_labels": [
+      "Free-flow",
+      "Moderate",
+      "Heavy",
+      "Severe"
+    ],
+    "fit_seconds": 12.156074465950951,
+    "selection_score": 0.7499645515324418
+  },
+  "validation_candidate_results": [
+    {
+      "model": "Decision Tree",
+      "metrics": {
+        "accuracy": 0.8262917301565313,
+        "macro_precision": 0.6816550119011029,
+        "macro_recall": 0.7294478323125635,
+        "macro_f1": 0.7016273343259718,
+        "confusion_matrix": [
+          [
+            3967,
+            360,
+            0,
+            1
+          ],
+          [
+            136,
+            1329,
+            295,
+            22
+          ],
+          [
+            0,
+            96,
+            379,
+            230
+          ],
+          [
+            0,
+            1,
+            113,
+            290
+          ]
+        ],
+        "class_labels": [
+          "Free-flow",
+          "Moderate",
+          "Heavy",
+          "Severe"
+        ],
+        "fit_seconds": 6.121930175926536,
+        "selection_score": 0.7016273343259718
+      },
+      "threshold": null
+    },
+    {
+      "model": "Random Forest",
+      "metrics": {
+        "accuracy": 0.8555201551461421,
+        "macro_precision": 0.7363651883870965,
+        "macro_recall": 0.7662179677796133,
+        "macro_f1": 0.7499645515324418,
+        "confusion_matrix": [
+          [
+            3970,
+            357,
+            1,
+            0
+          ],
+          [
+            97,
+            1495,
+            186,
+            4
+          ],
+          [
+            0,
+            112,
+            427,
+            166
+          ],
+          [
+            0,
+            2,
+            118,
+            284
+          ]
+        ],
+        "class_labels": [
+          "Free-flow",
+          "Moderate",
+          "Heavy",
+          "Severe"
+        ],
+        "fit_seconds": 12.156074465950951,
+        "selection_score": 0.7499645515324418
+      },
+      "threshold": null
+    },
+    {
+      "model": "Linear SVM",
+      "metrics": {
+        "accuracy": 0.8161795262501732,
+        "macro_precision": 0.6845617701725158,
+        "macro_recall": 0.709684700458243,
+        "macro_f1": 0.6959575944970708,
+        "confusion_matrix": [
+          [
+            3989,
+            336,
+            3,
+            0
+          ],
+          [
+            260,
+            1249,
+            261,
+            12
+          ],
+          [
+            2,
+            139,
+            381,
+            183
+          ],
+          [
+            0,
+            5,
+            126,
+            273
+          ]
+        ],
+        "class_labels": [
+          "Free-flow",
+          "Moderate",
+          "Heavy",
+          "Severe"
+        ],
+        "fit_seconds": 15.662537315976806,
+        "selection_score": 0.6959575944970708
+      },
+      "threshold": null
+    },
+    {
+      "model": "XGBoost",
+      "metrics": {
+        "accuracy": 0.8485939880869927,
+        "macro_precision": 0.7242102186656263,
+        "macro_recall": 0.763820576895963,
+        "macro_f1": 0.7419758131658243,
+        "confusion_matrix": [
+          [
+            3937,
+            390,
+            1,
+            0
+          ],
+          [
+            75,
+            1463,
+            238,
+            6
+          ],
+          [
+            0,
+            85,
+            447,
+            173
+          ],
+          [
+            0,
+            1,
+            124,
+            279
+          ]
+        ],
+        "class_labels": [
+          "Free-flow",
+          "Moderate",
+          "Heavy",
+          "Severe"
+        ],
+        "fit_seconds": 28.357474170043133,
+        "selection_score": 0.7419758131658243
+      },
+      "threshold": null
+    }
+  ],
+  "validation_selection_period": {
+    "start": "2025-04-16 16:30:00",
+    "end": "2025-04-27 05:00:00"
+  },
+  "validation_calibration_period": {
+    "start": "2025-04-27 05:30:00",
+    "end": "2025-05-01 17:30:00"
+  },
+  "validation_calibration_rows": 2951,
+  "target_class_counts": {
+    "train": {
+      "Free-flow": 44076,
+      "Moderate": 16918,
+      "Heavy": 6573,
+      "Severe": 3935
+    },
+    "validation_selection": {
+      "Free-flow": 4328,
+      "Moderate": 1782,
+      "Heavy": 705,
+      "Severe": 404
+    },
+    "validation_calibration": {
+      "Free-flow": 1819,
+      "Moderate": 695,
+      "Heavy": 268,
+      "Severe": 169
+    },
+    "test": {
+      "Free-flow": 12135,
+      "Moderate": 4940,
+      "Heavy": 2025,
+      "Severe": 1197
+    }
+  },
+  "test_rows": 20297,
+  "test_metrics": {
+    "accuracy": 0.854806128984579,
+    "macro_precision": 0.7327734271692443,
+    "macro_recall": 0.7646577157071486,
+    "macro_f1": 0.7462951300899419,
+    "confusion_matrix": [
+      [
+        11177,
+        958,
+        0,
+        0
+      ],
+      [
+        241,
+        4169,
+        503,
+        27
+      ],
+      [
+        0,
+        383,
+        1114,
+        528
+      ],
+      [
+        0,
+        4,
+        303,
+        890
+      ]
+    ],
+    "class_labels": [
+      "Free-flow",
+      "Moderate",
+      "Heavy",
+      "Severe"
+    ],
+    "evaluation_seconds": 0.24385619803797454
+  },
+  "training_rows": 71502,
+  "validation_rows": 10170,
+  "periods": {
+    "train": {
+      "start": "2025-01-02 00:00:00",
+      "end": "2025-04-16 15:00:00",
+      "rows_before_feature_filter": 71502
+    },
+    "validation": {
+      "start": "2025-04-16 16:30:00",
+      "end": "2025-05-01 17:30:00",
+      "rows_before_feature_filter": 10170
+    },
+    "test": {
+      "start": "2025-05-01 19:00:00",
+      "end": "2025-05-31 22:30:00",
+      "rows_before_feature_filter": 20297
+    }
+  },
+  "features": [
+    "road_id",
+    "latitude",
+    "longitude",
+    "road_capacity",
+    "weather_condition",
+    "temperature_band",
+    "temperature",
+    "rainfall",
+    "visibility",
+    "public_holiday",
+    "event_flag",
+    "roadwork_flag",
+    "hour",
+    "day_of_week",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week_sin",
+    "day_of_week_cos",
+    "is_weekend",
+    "is_peak_period",
+    "rain_flag",
+    "low_visibility_flag",
+    "holiday_peak_interaction",
+    "traffic_volume",
+    "vehicle_count",
+    "avg_speed",
+    "occupancy",
+    "congestion_level",
+    "travel_time",
+    "accident_count",
+    "signal_timing",
+    "traffic_volume_lag_1",
+    "traffic_volume_lag_2",
+    "traffic_volume_lag_48",
+    "traffic_volume_rolling_mean_4",
+    "traffic_volume_rolling_std_4",
+    "traffic_volume_rolling_mean_8",
+    "traffic_volume_rolling_std_8",
+    "avg_speed_lag_1",
+    "avg_speed_lag_2",
+    "avg_speed_lag_48",
+    "avg_speed_rolling_mean_4",
+    "avg_speed_rolling_std_4",
+    "avg_speed_rolling_mean_8",
+    "avg_speed_rolling_std_8"
+  ],
+  "validation_candidate_artifact": null,
+  "preprocessing": "Median imputation and standard scaling for numeric inputs; OneHotEncoder(handle_unknown='ignore') for categories. All transformers fit on training rows only.",
+  "artifact_path": "models/m5/corrected_v2/20261102T172452/congestion_level_60m.joblib",
+  "test_partition_used_for_selection": false,
+  "software_versions": {
+    "python": "3.11.18",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "scipy": "1.15.3",
+    "scikit_learn": "1.6.1",
+    "xgboost": "2.1.4"
+  },
+  "random_seed": 42
+}

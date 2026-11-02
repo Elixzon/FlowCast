@@ -1,0 +1,26 @@
+{
+  "stage": "m6_train",
+  "completed_at_utc": "2026-11-02T12:40:07.818447+00:00",
+  "raw_sha256": {
+    "traffic_sensor_log.csv": "8f793f3643c891d4fdda7b66c5c4792d24f4db3f26a07cccb8f1d613e254062a",
+    "weather_observations.csv": "63f3dc54a491dfd5d4663d8bf0602779084c30a1396f0c7b4fd177e132bc8a31",
+    "calendar_events.csv": "60d3de6b731486e02f6edaa3515af87c2472231a211b48d94d7a3cad38799b9c"
+  },
+  "details": {
+    "model_count": 12,
+    "models": [
+      "LSTM_30m",
+      "GRU_30m",
+      "Bidirectional LSTM_30m",
+      "LSTM_60m",
+      "GRU_60m",
+      "Bidirectional LSTM_60m",
+      "LSTM_90m",
+      "GRU_90m",
+      "Bidirectional LSTM_90m",
+      "LSTM_120m",
+      "GRU_120m",
+      "Bidirectional LSTM_120m"
+    ]
+  }
+}

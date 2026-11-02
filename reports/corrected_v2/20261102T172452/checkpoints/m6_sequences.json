@@ -1,0 +1,33 @@
+{
+  "stage": "m6_sequences",
+  "completed_at_utc": "2026-11-02T12:12:43.491528+00:00",
+  "raw_sha256": {
+    "traffic_sensor_log.csv": "8f793f3643c891d4fdda7b66c5c4792d24f4db3f26a07cccb8f1d613e254062a",
+    "weather_observations.csv": "63f3dc54a491dfd5d4663d8bf0602779084c30a1396f0c7b4fd177e132bc8a31",
+    "calendar_events.csv": "60d3de6b731486e02f6edaa3515af87c2472231a211b48d94d7a3cad38799b9c"
+  },
+  "details": {
+    "horizons": {
+      "30": {
+        "train": 10126,
+        "validation": 1324,
+        "test": 2823
+      },
+      "60": {
+        "train": 9887,
+        "validation": 1296,
+        "test": 2744
+      },
+      "90": {
+        "train": 9651,
+        "validation": 1268,
+        "test": 2666
+      },
+      "120": {
+        "train": 9421,
+        "validation": 1241,
+        "test": 2586
+      }
+    }
+  }
+}

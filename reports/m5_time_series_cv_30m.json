@@ -1,0 +1,101 @@
+{
+    "experiment": "Expanding-window time-series cross-validation",
+    "target": "traffic_volume_t_plus_30",
+    "horizon_minutes": 30,
+    "fold_count": 3,
+    "gap_minutes": 30,
+    "preprocessing_fit_per_fold": true,
+    "test_data_used": false,
+    "fold_results": [
+        {
+            "fold": 1,
+            "model": "Random Forest",
+            "train_rows": 59136,
+            "validation_rows": 20129,
+            "training_cutoff": "2025-02-22 20:00:00",
+            "validation_start": "2025-02-22 20:30:00",
+            "validation_end": "2025-03-12 10:30:00",
+            "mae": 59.59097847543141,
+            "rmse": 91.3512696224259,
+            "mape": 17.582986321614467
+        },
+        {
+            "fold": 1,
+            "model": "XGBoost",
+            "train_rows": 59136,
+            "validation_rows": 20129,
+            "training_cutoff": "2025-02-22 20:00:00",
+            "validation_start": "2025-02-22 20:30:00",
+            "validation_end": "2025-03-12 10:30:00",
+            "mae": 58.49015002260384,
+            "rmse": 84.05402053779243,
+            "mape": 17.62930925900844
+        },
+        {
+            "fold": 2,
+            "model": "Random Forest",
+            "train_rows": 79263,
+            "validation_rows": 20083,
+            "training_cutoff": "2025-03-12 10:30:00",
+            "validation_start": "2025-03-12 11:00:00",
+            "validation_end": "2025-03-30 01:00:00",
+            "mae": 41.388382846799885,
+            "rmse": 60.84220844419195,
+            "mape": 10.242847262910384
+        },
+        {
+            "fold": 2,
+            "model": "XGBoost",
+            "train_rows": 79263,
+            "validation_rows": 20083,
+            "training_cutoff": "2025-03-12 10:30:00",
+            "validation_start": "2025-03-12 11:00:00",
+            "validation_end": "2025-03-30 01:00:00",
+            "mae": 40.19780550587296,
+            "rmse": 58.965475556379225,
+            "mape": 9.866197631868413
+        },
+        {
+            "fold": 3,
+            "model": "Random Forest",
+            "train_rows": 99346,
+            "validation_rows": 20116,
+            "training_cutoff": "2025-03-30 01:00:00",
+            "validation_start": "2025-03-30 01:30:00",
+            "validation_end": "2025-04-16 15:30:00",
+            "mae": 43.84253211563861,
+            "rmse": 67.29533020413726,
+            "mape": 10.59108050334711
+        },
+        {
+            "fold": 3,
+            "model": "XGBoost",
+            "train_rows": 99346,
+            "validation_rows": 20116,
+            "training_cutoff": "2025-03-30 01:00:00",
+            "validation_start": "2025-03-30 01:30:00",
+            "validation_end": "2025-04-16 15:30:00",
+            "mae": 40.83608551920468,
+            "rmse": 60.28009501431977,
+            "mape": 9.978785887900452
+        }
+    ],
+    "summary": [
+        {
+            "model": "XGBoost",
+            "folds": 3,
+            "mean_MAE": 46.50801368256049,
+            "mean_RMSE": 67.76653036949715,
+            "mean_MAPE": 12.4914309262591,
+            "std_RMSE": 14.120687237756368
+        },
+        {
+            "model": "Random Forest",
+            "folds": 3,
+            "mean_MAE": 48.273964479289965,
+            "mean_RMSE": 73.1629360902517,
+            "mean_MAPE": 12.805638029290654,
+            "std_RMSE": 16.078628754355243
+        }
+    ]
+}

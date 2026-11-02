@@ -1,0 +1,261 @@
+{
+  "project": "FlowCast",
+  "module": "M1 - Ingestion & Validation",
+  "generated_at_utc": "2026-11-02T11:54:54.545746+00:00",
+  "source_policy": "Raw inputs are read-only; validation never modifies them.",
+  "files": {
+    "traffic_sensor_log.csv": {
+      "exists": true,
+      "rows": 178468,
+      "columns": [
+        "road_id",
+        "road_name",
+        "latitude",
+        "longitude",
+        "weather_station_id",
+        "date",
+        "time",
+        "traffic_volume",
+        "vehicle_count",
+        "vehicle_type_dist",
+        "avg_speed",
+        "occupancy",
+        "congestion_level",
+        "travel_time",
+        "accident_count",
+        "signal_timing",
+        "road_capacity"
+      ],
+      "missing_required_columns": [],
+      "null_counts": {
+        "road_id": 0,
+        "road_name": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "weather_station_id": 0,
+        "date": 0,
+        "time": 0,
+        "traffic_volume": 4387,
+        "vehicle_count": 0,
+        "vehicle_type_dist": 0,
+        "avg_speed": 4382,
+        "occupancy": 4383,
+        "congestion_level": 26883,
+        "travel_time": 0,
+        "accident_count": 0,
+        "signal_timing": 0,
+        "road_capacity": 0
+      },
+      "dtypes": {
+        "road_id": "object",
+        "road_name": "object",
+        "latitude": "float64",
+        "longitude": "float64",
+        "weather_station_id": "object",
+        "date": "object",
+        "time": "object",
+        "traffic_volume": "float64",
+        "vehicle_count": "int64",
+        "vehicle_type_dist": "object",
+        "avg_speed": "float64",
+        "occupancy": "float64",
+        "congestion_level": "object",
+        "travel_time": "float64",
+        "accident_count": "int64",
+        "signal_timing": "int64",
+        "road_capacity": "int64"
+      },
+      "road_segments": 25,
+      "date_min": "2025-01-01",
+      "date_max": "2025-05-31",
+      "quarantined_rows": 34149,
+      "quarantine_file": "/Users/admin/Desktop/FlowCast_Project/reports/corrected_v2/20261102T172452/m1/quarantine/traffic_sensor_log_validation_quarantine.csv"
+    },
+    "weather_observations.csv": {
+      "exists": true,
+      "rows": 10872,
+      "columns": [
+        "station_id",
+        "date",
+        "time",
+        "weather_condition",
+        "temperature",
+        "rainfall",
+        "visibility"
+      ],
+      "missing_required_columns": [],
+      "null_counts": {
+        "station_id": 0,
+        "date": 0,
+        "time": 0,
+        "weather_condition": 0,
+        "temperature": 167,
+        "rainfall": 0,
+        "visibility": 111
+      },
+      "dtypes": {
+        "station_id": "object",
+        "date": "object",
+        "time": "object",
+        "weather_condition": "object",
+        "temperature": "float64",
+        "rainfall": "float64",
+        "visibility": "float64"
+      },
+      "weather_label_counts_normalized": {
+        "Clear": 8168,
+        "Cloudy": 2202,
+        "Rain": 426,
+        "Fog": 76
+      },
+      "stations": 3,
+      "quarantined_rows": 278,
+      "quarantine_file": "/Users/admin/Desktop/FlowCast_Project/reports/corrected_v2/20261102T172452/m1/quarantine/weather_observations_validation_quarantine.csv"
+    },
+    "calendar_events.csv": {
+      "exists": true,
+      "rows": 151,
+      "columns": [
+        "date",
+        "public_holiday",
+        "holiday_name",
+        "event_flag",
+        "event_name",
+        "roadwork_flag"
+      ],
+      "missing_required_columns": [],
+      "null_counts": {
+        "date": 0,
+        "public_holiday": 0,
+        "holiday_name": 145,
+        "event_flag": 0,
+        "event_name": 145,
+        "roadwork_flag": 0
+      },
+      "dtypes": {
+        "date": "object",
+        "public_holiday": "int64",
+        "holiday_name": "object",
+        "event_flag": "int64",
+        "event_name": "object",
+        "roadwork_flag": "int64"
+      },
+      "quarantined_rows": 0
+    }
+  },
+  "issues": [
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_values",
+      "count": 4387,
+      "severity": "warning",
+      "details": "traffic_volume"
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_traffic_volume",
+      "count": 4387,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_values",
+      "count": 4382,
+      "severity": "warning",
+      "details": "avg_speed"
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_avg_speed",
+      "count": 4382,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_values",
+      "count": 4383,
+      "severity": "warning",
+      "details": "occupancy"
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_occupancy",
+      "count": 4383,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_values",
+      "count": 26883,
+      "severity": "warning",
+      "details": "congestion_level"
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_congestion_level",
+      "count": 26883,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "impossible_traffic_volume",
+      "count": 241,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "impossible_avg_speed",
+      "count": 237,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "impossible_occupancy",
+      "count": 234,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "duplicate_key",
+      "count": 3534,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "weather_observations.csv",
+      "issue": "missing_values",
+      "count": 167,
+      "severity": "warning",
+      "details": "temperature"
+    },
+    {
+      "file": "weather_observations.csv",
+      "issue": "missing_temperature",
+      "count": 167,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "weather_observations.csv",
+      "issue": "missing_values",
+      "count": 111,
+      "severity": "warning",
+      "details": "visibility"
+    },
+    {
+      "file": "weather_observations.csv",
+      "issue": "missing_visibility",
+      "count": 111,
+      "severity": "warning",
+      "details": ""
+    }
+  ],
+  "record_policy": "Rows with validation findings are copied to quarantine. Source files remain unchanged; M2 decides how recoverable values are handled."
+}

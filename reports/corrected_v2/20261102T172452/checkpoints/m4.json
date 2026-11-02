@@ -1,0 +1,150 @@
+{
+  "stage": "m4",
+  "completed_at_utc": "2026-11-02T11:55:29.237474+00:00",
+  "raw_sha256": {
+    "traffic_sensor_log.csv": "8f793f3643c891d4fdda7b66c5c4792d24f4db3f26a07cccb8f1d613e254062a",
+    "weather_observations.csv": "63f3dc54a491dfd5d4663d8bf0602779084c30a1396f0c7b4fd177e132bc8a31",
+    "calendar_events.csv": "60d3de6b731486e02f6edaa3515af87c2472231a211b48d94d7a3cad38799b9c"
+  },
+  "details": {
+    "module": "M4 - Exploratory Data Analysis",
+    "input": "data/processed/corrected_v2/20261102T172452/flowcast_m3_features.csv",
+    "rows": 176701,
+    "columns": 60,
+    "road_segments": 25,
+    "date_start": "2025-01-01 00:00:00",
+    "date_end": "2025-05-31 23:30:00",
+    "duplicate_road_time_keys": 0,
+    "total_null_cells": 341132,
+    "null_counts": {
+      "traffic_volume": 4587,
+      "avg_speed": 10,
+      "occupancy": 11,
+      "congestion_level": 681,
+      "traffic_volume_lag_1": 8889,
+      "traffic_volume_lag_2": 8893,
+      "traffic_volume_lag_48": 9956,
+      "traffic_volume_rolling_mean_4": 32958,
+      "traffic_volume_rolling_std_4": 32958,
+      "traffic_volume_rolling_mean_8": 59892,
+      "traffic_volume_rolling_std_8": 59892,
+      "avg_speed_lag_1": 4420,
+      "avg_speed_lag_2": 4448,
+      "avg_speed_lag_48": 5517,
+      "avg_speed_rolling_mean_4": 16996,
+      "avg_speed_rolling_std_4": 16996,
+      "avg_speed_rolling_mean_8": 32427,
+      "avg_speed_rolling_std_8": 32427,
+      "volume_capacity_ratio": 4587,
+      "capacity_headroom": 4587
+    },
+    "traffic_volume": {
+      "mean": 431.2903714979607,
+      "median": 362.0,
+      "std": 283.4066639965903,
+      "min": 41.0,
+      "max": 2090.0
+    },
+    "avg_speed": {
+      "mean": 42.103794194384555,
+      "median": 44.9,
+      "min": 6.7,
+      "max": 64.8
+    },
+    "congestion_distribution": {
+      "Free-flow": 108139,
+      "Moderate": 41905,
+      "Heavy": 16257,
+      "Severe": 9719
+    },
+    "weather_distribution": {
+      "Clear": 132715,
+      "Cloudy": 35779,
+      "Rain": 6959,
+      "Fog": 1248
+    },
+    "correlation_with_traffic_volume": {
+      "vehicle_count": 1.0,
+      "volume_capacity_ratio": 0.9487519179676509,
+      "occupancy": 0.9380376205807546,
+      "traffic_volume_lag_1": 0.9338054907751394,
+      "traffic_volume_lag_48": 0.8667635655194665,
+      "traffic_volume_lag_2": 0.8414677030095349,
+      "traffic_volume_rolling_mean_4": 0.8000933311482925,
+      "signal_timing": 0.7608552894393632,
+      "is_peak_period": 0.7165493870158777,
+      "traffic_volume_rolling_std_4": 0.6428133401429681,
+      "vehicle_share_car": 0.594271428340832,
+      "traffic_volume_rolling_mean_8": 0.5717292708511374,
+      "travel_time": 0.5360033435689003,
+      "traffic_volume_rolling_std_8": 0.5270865220701931,
+      "avg_speed_rolling_std_4": 0.5180560372187818,
+      "avg_speed_rolling_std_8": 0.44399256138956206,
+      "temperature": 0.38496409217970085,
+      "road_capacity": 0.2649843888060094,
+      "hour": 0.2196325316567554,
+      "day_of_week_sin": 0.16057834824953968,
+      "event_flag": 0.13222172630370213,
+      "event_proximity_flag": 0.08225045777826102,
+      "visibility": 0.07267864516953843,
+      "longitude": 0.07052369948620929,
+      "accident_count": 0.03499588138477136,
+      "latitude": 0.025313379683241946,
+      "vehicle_share_lcv": -0.0005777388176164506,
+      "holiday_peak_interaction": -0.022916091505697133,
+      "day_of_week_cos": -0.03521228944152075,
+      "rainfall": -0.03812302981269092,
+      "rain_flag": -0.046515010609466806,
+      "low_visibility_flag": -0.058862898241200855,
+      "roadwork_flag": -0.11070703786347397,
+      "hour_sin": -0.1555075866558739,
+      "public_holiday": -0.15624195368992733,
+      "day_of_week": -0.17999353853481975,
+      "is_weekend": -0.2290044325437658,
+      "avg_speed_rolling_mean_8": -0.4530015190646041,
+      "vehicle_share_hcv": -0.5170127635350125,
+      "hour_cos": -0.5288286610296604,
+      "vehicle_share_2w": -0.5404740921916902,
+      "avg_speed_rolling_mean_4": -0.6917002638100411,
+      "avg_speed_lag_2": -0.7210875101866745,
+      "avg_speed_lag_48": -0.7591247231446253,
+      "avg_speed_lag_1": -0.8211375330149239,
+      "capacity_headroom": -0.8361967318401576,
+      "avg_speed": -0.8961163399836172
+    },
+    "figures": [
+      "01_traffic_volume_distribution.png",
+      "02_congestion_distribution.png",
+      "03_speed_distribution.png",
+      "04_hourly_traffic_pattern.png",
+      "05_weekday_traffic_pattern.png",
+      "06_road_segment_comparison.png",
+      "07_weather_vs_traffic.png",
+      "08_correlation_heatmap.png",
+      "09_congestion_by_hour.png",
+      "10_volume_vs_speed.png"
+    ],
+    "weather_traffic_summary": {
+      "Clear": {
+        "mean": 437.2663505862698,
+        "median": 367.0,
+        "count": 129292
+      },
+      "Cloudy": {
+        "mean": 428.8947549737318,
+        "median": 360.0,
+        "count": 34833
+      },
+      "Fog": {
+        "mean": 217.88230452674898,
+        "median": 181.0,
+        "count": 1215
+      },
+      "Rain": {
+        "mean": 367.8258045467966,
+        "median": 331.0,
+        "count": 6774
+      }
+    }
+  }
+}

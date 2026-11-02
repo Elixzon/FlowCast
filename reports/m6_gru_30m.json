@@ -1,0 +1,12 @@
+{
+  "model": "GRU",
+  "target": "traffic_volume_t_plus_30",
+  "partition": "validation",
+  "epochs_completed": 21,
+  "best_epoch": 13,
+  "MAE": 37.1508674621582,
+  "RMSE": 53.96703773702402,
+  "MAPE_percent": 9.524566680192947,
+  "R2": 0.962064266204834,
+  "test_used": false
+}

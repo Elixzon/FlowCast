@@ -1,0 +1,482 @@
+[
+    {
+        "task": "traffic_volume",
+        "horizon_minutes": 30,
+        "model": "xgboost_regression_30m.joblib",
+        "test_rows": 34416,
+        "MAE": 40.595044004774905,
+        "RMSE": 59.30657049040269,
+        "MAPE_percent": 9.707988915710592,
+        "R2": 0.9567129448898009,
+        "details": {
+            "MAE": 40.595044004774905,
+            "RMSE": 59.30657049040269,
+            "MAPE_percent": 9.707988915710592,
+            "R2": 0.9567129448898009
+        }
+    },
+    {
+        "task": "traffic_volume",
+        "horizon_minutes": 60,
+        "model": "xgboost_regression_60m.joblib",
+        "test_rows": 34389,
+        "MAE": 41.63439301252816,
+        "RMSE": 60.42732224514929,
+        "MAPE_percent": 9.977747402197718,
+        "R2": 0.9550795348910874,
+        "details": {
+            "MAE": 41.63439301252816,
+            "RMSE": 60.42732224514929,
+            "MAPE_percent": 9.977747402197718,
+            "R2": 0.9550795348910874
+        }
+    },
+    {
+        "task": "traffic_volume",
+        "horizon_minutes": 90,
+        "model": "xgboost_regression_90m.joblib",
+        "test_rows": 34367,
+        "MAE": 42.36260449134421,
+        "RMSE": 61.48785331904338,
+        "MAPE_percent": 10.220590097581827,
+        "R2": 0.9535450221250011,
+        "details": {
+            "MAE": 42.36260449134421,
+            "RMSE": 61.48785331904338,
+            "MAPE_percent": 10.220590097581827,
+            "R2": 0.9535450221250011
+        }
+    },
+    {
+        "task": "traffic_volume",
+        "horizon_minutes": 120,
+        "model": "xgboost_regression_120m.joblib",
+        "test_rows": 34350,
+        "MAE": 43.111512159396575,
+        "RMSE": 62.61388638782127,
+        "MAPE_percent": 10.458606034033501,
+        "R2": 0.9518674351326907,
+        "details": {
+            "MAE": 43.111512159396575,
+            "RMSE": 62.61388638782127,
+            "MAPE_percent": 10.458606034033501,
+            "R2": 0.9518674351326907
+        }
+    },
+    {
+        "task": "travel_time",
+        "horizon_minutes": 30,
+        "model": "xgboost_travel_time_30m.joblib",
+        "test_rows": 34416,
+        "MAE": 0.438887173084188,
+        "RMSE": 1.05938348524309,
+        "MAPE_percent": 9.455154205352155,
+        "R2": 0.8244472775017736,
+        "details": {
+            "MAE": 0.438887173084188,
+            "RMSE": 1.05938348524309,
+            "MAPE_percent": 9.455154205352155,
+            "R2": 0.8244472775017736
+        }
+    },
+    {
+        "task": "travel_time",
+        "horizon_minutes": 60,
+        "model": "random_forest_travel_time_60m.joblib",
+        "test_rows": 34389,
+        "MAE": 0.4308519890807914,
+        "RMSE": 1.0744205639954825,
+        "MAPE_percent": 8.992343934834746,
+        "R2": 0.8202290929769951,
+        "details": {
+            "MAE": 0.4308519890807914,
+            "RMSE": 1.0744205639954825,
+            "MAPE_percent": 8.992343934834746,
+            "R2": 0.8202290929769951
+        }
+    },
+    {
+        "task": "travel_time",
+        "horizon_minutes": 90,
+        "model": "xgboost_travel_time_90m.joblib",
+        "test_rows": 34367,
+        "MAE": 0.44858395510026333,
+        "RMSE": 1.0693266049138004,
+        "MAPE_percent": 9.778007660073547,
+        "R2": 0.8217721842387304,
+        "details": {
+            "MAE": 0.44858395510026333,
+            "RMSE": 1.0693266049138004,
+            "MAPE_percent": 9.778007660073547,
+            "R2": 0.8217721842387304
+        }
+    },
+    {
+        "task": "travel_time",
+        "horizon_minutes": 120,
+        "model": "xgboost_travel_time_120m.joblib",
+        "test_rows": 34350,
+        "MAE": 0.4846380133899539,
+        "RMSE": 1.1147882520821835,
+        "MAPE_percent": 10.93174844095481,
+        "R2": 0.8058851486248655,
+        "details": {
+            "MAE": 0.4846380133899539,
+            "RMSE": 1.1147882520821835,
+            "MAPE_percent": 10.93174844095481,
+            "R2": 0.8058851486248655
+        }
+    },
+    {
+        "task": "congestion_level",
+        "horizon_minutes": 30,
+        "model": "xgboost_congestion_30m.joblib",
+        "test_rows": 34416,
+        "accuracy": 0.8735471873547187,
+        "macro_precision": 0.7702075696237944,
+        "macro_recall": 0.7615452014437847,
+        "macro_f1": 0.7639769225698317,
+        "details": {
+            "accuracy": 0.8735471873547187,
+            "macro_precision": 0.7702075696237944,
+            "macro_recall": 0.7615452014437847,
+            "macro_f1": 0.7639769225698317,
+            "confusion_matrix": [
+                [
+                    19773,
+                    0,
+                    996,
+                    0
+                ],
+                [
+                    0,
+                    2308,
+                    604,
+                    471
+                ],
+                [
+                    738,
+                    722,
+                    6825,
+                    15
+                ],
+                [
+                    0,
+                    795,
+                    11,
+                    1158
+                ]
+            ],
+            "class_labels": [
+                "Free-flow",
+                "Heavy",
+                "Moderate",
+                "Severe"
+            ]
+        }
+    },
+    {
+        "task": "congestion_level",
+        "horizon_minutes": 60,
+        "model": "xgboost_congestion_60m.joblib",
+        "test_rows": 34389,
+        "accuracy": 0.8639390502777051,
+        "macro_precision": 0.7557786340947097,
+        "macro_recall": 0.7368828949904347,
+        "macro_f1": 0.7449763194889718,
+        "details": {
+            "accuracy": 0.8639390502777051,
+            "macro_precision": 0.7557786340947097,
+            "macro_recall": 0.7368828949904347,
+            "macro_f1": 0.7449763194889718,
+            "confusion_matrix": [
+                [
+                    19737,
+                    1,
+                    1036,
+                    0
+                ],
+                [
+                    0,
+                    1995,
+                    914,
+                    492
+                ],
+                [
+                    859,
+                    537,
+                    6836,
+                    22
+                ],
+                [
+                    0,
+                    798,
+                    20,
+                    1142
+                ]
+            ],
+            "class_labels": [
+                "Free-flow",
+                "Heavy",
+                "Moderate",
+                "Severe"
+            ]
+        }
+    },
+    {
+        "task": "congestion_level",
+        "horizon_minutes": 90,
+        "model": "xgboost_congestion_90m.joblib",
+        "test_rows": 34367,
+        "accuracy": 0.8688276544359415,
+        "macro_precision": 0.7637135450280177,
+        "macro_recall": 0.75663273616841,
+        "macro_f1": 0.7575250977708992,
+        "details": {
+            "accuracy": 0.8688276544359415,
+            "macro_precision": 0.7637135450280177,
+            "macro_recall": 0.75663273616841,
+            "macro_f1": 0.7575250977708992,
+            "confusion_matrix": [
+                [
+                    19718,
+                    0,
+                    1043,
+                    0
+                ],
+                [
+                    0,
+                    2375,
+                    546,
+                    473
+                ],
+                [
+                    777,
+                    809,
+                    6644,
+                    19
+                ],
+                [
+                    0,
+                    830,
+                    11,
+                    1122
+                ]
+            ],
+            "class_labels": [
+                "Free-flow",
+                "Heavy",
+                "Moderate",
+                "Severe"
+            ]
+        }
+    },
+    {
+        "task": "congestion_level",
+        "horizon_minutes": 120,
+        "model": "xgboost_congestion_120m.joblib",
+        "test_rows": 34350,
+        "accuracy": 0.8607569141193595,
+        "macro_precision": 0.7486070787005424,
+        "macro_recall": 0.7297189625092444,
+        "macro_f1": 0.7376583092122367,
+        "details": {
+            "accuracy": 0.8607569141193595,
+            "macro_precision": 0.7486070787005424,
+            "macro_recall": 0.7297189625092444,
+            "macro_f1": 0.7376583092122367,
+            "confusion_matrix": [
+                [
+                    19670,
+                    1,
+                    1079,
+                    0
+                ],
+                [
+                    0,
+                    1796,
+                    1054,
+                    534
+                ],
+                [
+                    832,
+                    472,
+                    6914,
+                    24
+                ],
+                [
+                    0,
+                    761,
+                    26,
+                    1187
+                ]
+            ],
+            "class_labels": [
+                "Free-flow",
+                "Heavy",
+                "Moderate",
+                "Severe"
+            ]
+        }
+    },
+    {
+        "task": "accident_risk",
+        "horizon_minutes": 30,
+        "model": "linear_svm_accident_risk_30m.joblib",
+        "test_rows": 34416,
+        "accuracy": 0.6976696885169689,
+        "macro_precision": 0.5029465568073971,
+        "macro_recall": 0.5652806004064586,
+        "macro_f1": 0.4238070180593436,
+        "positive_precision": 0.013707886861666184,
+        "positive_recall": 0.4303030303030303,
+        "positive_f1": 0.026569370380765272,
+        "ROC_AUC": 0.5878999464811822,
+        "PR_AUC": 0.017018579024176847,
+        "details": {
+            "accuracy": 0.6976696885169689,
+            "macro_precision": 0.5029465568073971,
+            "macro_recall": 0.5652806004064586,
+            "macro_f1": 0.4238070180593436,
+            "confusion_matrix": [
+                [
+                    23869,
+                    10217
+                ],
+                [
+                    188,
+                    142
+                ]
+            ],
+            "class_labels": [
+                "0",
+                "1"
+            ],
+            "positive_precision": 0.013707886861666184,
+            "positive_recall": 0.4303030303030303,
+            "positive_f1": 0.026569370380765272,
+            "ROC_AUC": 0.5878999464811822,
+            "PR_AUC": 0.017018579024176847
+        }
+    },
+    {
+        "task": "accident_risk",
+        "horizon_minutes": 60,
+        "model": "linear_svm_accident_risk_60m.joblib",
+        "test_rows": 34389,
+        "accuracy": 0.6100497252028265,
+        "macro_precision": 0.5033122185112593,
+        "macro_recall": 0.5812768549828313,
+        "macro_f1": 0.3915779065010087,
+        "positive_precision": 0.01383413908516177,
+        "positive_recall": 0.5519287833827893,
+        "positive_f1": 0.026991728341314757,
+        "ROC_AUC": 0.609474478028193,
+        "PR_AUC": 0.01795645534676062,
+        "details": {
+            "accuracy": 0.6100497252028265,
+            "macro_precision": 0.5033122185112593,
+            "macro_recall": 0.5812768549828313,
+            "macro_f1": 0.3915779065010087,
+            "confusion_matrix": [
+                [
+                    20793,
+                    13259
+                ],
+                [
+                    151,
+                    186
+                ]
+            ],
+            "class_labels": [
+                "0",
+                "1"
+            ],
+            "positive_precision": 0.01383413908516177,
+            "positive_recall": 0.5519287833827893,
+            "positive_f1": 0.026991728341314757,
+            "ROC_AUC": 0.609474478028193,
+            "PR_AUC": 0.01795645534676062
+        }
+    },
+    {
+        "task": "accident_risk",
+        "horizon_minutes": 90,
+        "model": "linear_svm_accident_risk_90m.joblib",
+        "test_rows": 34367,
+        "accuracy": 0.5722349928710682,
+        "macro_precision": 0.5026892625253527,
+        "macro_recall": 0.5682466984541328,
+        "macro_f1": 0.3755383674990899,
+        "positive_precision": 0.012818773738469886,
+        "positive_recall": 0.564179104477612,
+        "positive_f1": 0.02506797532992904,
+        "ROC_AUC": 0.5882290767600643,
+        "PR_AUC": 0.015367551785809678,
+        "details": {
+            "accuracy": 0.5722349928710682,
+            "macro_precision": 0.5026892625253527,
+            "macro_recall": 0.5682466984541328,
+            "macro_f1": 0.3755383674990899,
+            "confusion_matrix": [
+                [
+                    19477,
+                    14555
+                ],
+                [
+                    146,
+                    189
+                ]
+            ],
+            "class_labels": [
+                "0",
+                "1"
+            ],
+            "positive_precision": 0.012818773738469886,
+            "positive_recall": 0.564179104477612,
+            "positive_f1": 0.02506797532992904,
+            "ROC_AUC": 0.5882290767600643,
+            "PR_AUC": 0.015367551785809678
+        }
+    },
+    {
+        "task": "accident_risk",
+        "horizon_minutes": 120,
+        "model": "random_forest_accident_risk_120m.joblib",
+        "test_rows": 34350,
+        "accuracy": 0.990160116448326,
+        "macro_precision": 0.4951953875720692,
+        "macro_recall": 0.49988242210464434,
+        "macro_f1": 0.49752786635850327,
+        "positive_precision": 0.0,
+        "positive_recall": 0.0,
+        "positive_f1": 0.0,
+        "ROC_AUC": 0.5556888995777884,
+        "PR_AUC": 0.012943988568214746,
+        "details": {
+            "accuracy": 0.990160116448326,
+            "macro_precision": 0.4951953875720692,
+            "macro_recall": 0.49988242210464434,
+            "macro_f1": 0.49752786635850327,
+            "confusion_matrix": [
+                [
+                    34012,
+                    8
+                ],
+                [
+                    330,
+                    0
+                ]
+            ],
+            "class_labels": [
+                "0",
+                "1"
+            ],
+            "positive_precision": 0.0,
+            "positive_recall": 0.0,
+            "positive_f1": 0.0,
+            "ROC_AUC": 0.5556888995777884,
+            "PR_AUC": 0.012943988568214746
+        }
+    }
+]

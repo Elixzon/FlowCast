@@ -1,0 +1,181 @@
+{
+  "project": "FlowCast",
+  "module": "M1 - Ingestion & Validation",
+  "generated_at_utc": "2026-10-30T05:57:06.590326+00:00",
+  "source_policy": "Raw inputs are read-only; no records are removed in M1.",
+  "files": {
+    "traffic_sensor_log.csv": {
+      "exists": true,
+      "rows": 178468,
+      "columns": [
+        "road_id",
+        "road_name",
+        "latitude",
+        "longitude",
+        "weather_station_id",
+        "date",
+        "time",
+        "traffic_volume",
+        "vehicle_count",
+        "vehicle_type_dist",
+        "avg_speed",
+        "occupancy",
+        "congestion_level",
+        "travel_time",
+        "accident_count",
+        "signal_timing",
+        "road_capacity"
+      ],
+      "missing_required_columns": [],
+      "null_counts": {
+        "road_id": 0,
+        "road_name": 0,
+        "latitude": 0,
+        "longitude": 0,
+        "weather_station_id": 0,
+        "date": 0,
+        "time": 0,
+        "traffic_volume": 4387,
+        "vehicle_count": 0,
+        "vehicle_type_dist": 0,
+        "avg_speed": 4382,
+        "occupancy": 4383,
+        "congestion_level": 26883,
+        "travel_time": 0,
+        "accident_count": 0,
+        "signal_timing": 0,
+        "road_capacity": 0
+      },
+      "road_segments": 25,
+      "date_min": "2025-01-01",
+      "date_max": "2025-05-31"
+    },
+    "weather_observations.csv": {
+      "exists": true,
+      "rows": 10872,
+      "columns": [
+        "station_id",
+        "date",
+        "time",
+        "weather_condition",
+        "temperature",
+        "rainfall",
+        "visibility"
+      ],
+      "missing_required_columns": [],
+      "null_counts": {
+        "station_id": 0,
+        "date": 0,
+        "time": 0,
+        "weather_condition": 0,
+        "temperature": 167,
+        "rainfall": 0,
+        "visibility": 111
+      },
+      "weather_label_counts_raw": {
+        "clear": 8168,
+        "cloudy": 1844,
+        "rain": 389,
+        "overcast": 358,
+        "fog": 66,
+        "rainy": 37,
+        "foggy": 10
+      },
+      "stations": 3
+    },
+    "calendar_events.csv": {
+      "exists": true,
+      "rows": 151,
+      "columns": [
+        "date",
+        "public_holiday",
+        "holiday_name",
+        "event_flag",
+        "event_name",
+        "roadwork_flag"
+      ],
+      "missing_required_columns": [],
+      "null_counts": {
+        "date": 0,
+        "public_holiday": 0,
+        "holiday_name": 145,
+        "event_flag": 0,
+        "event_name": 145,
+        "roadwork_flag": 0
+      }
+    }
+  },
+  "issues": [
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "rows_in_duplicate_segment_time_groups",
+      "count": 3534,
+      "severity": "warning",
+      "details": "Key: road_id + date + time; M2 resolves duplicates."
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_traffic_volume",
+      "count": 4387,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_avg_speed",
+      "count": 4382,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_occupancy",
+      "count": 4383,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "missing_congestion_level",
+      "count": 26883,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "negative_traffic_volume",
+      "count": 241,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "avg_speed_above_200",
+      "count": 237,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "traffic_sensor_log.csv",
+      "issue": "occupancy_above_100",
+      "count": 234,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "weather_observations.csv",
+      "issue": "missing_temperature",
+      "count": 167,
+      "severity": "warning",
+      "details": ""
+    },
+    {
+      "file": "weather_observations.csv",
+      "issue": "missing_visibility",
+      "count": 111,
+      "severity": "warning",
+      "details": ""
+    }
+  ],
+  "record_policy": "M1 reports validation findings. Structural failures are flagged; duplicate and value-quality remediation belongs to M2. No silent drops."
+}
