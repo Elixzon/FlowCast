@@ -15,23 +15,34 @@ import scipy
 import sklearn
 import xgboost
 from scipy.linalg import lstsq
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import (
+    ExtraTreesClassifier,
+    HistGradientBoostingClassifier,
+    RandomForestClassifier,
+    RandomForestRegressor,
+)
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
+    brier_score_loss,
     confusion_matrix,
     f1_score,
+    log_loss,
     mean_absolute_error,
     mean_squared_error,
     precision_recall_curve,
+    precision_recall_fscore_support,
     precision_score,
     r2_score,
     recall_score,
     roc_auc_score,
 )
 from sklearn.pipeline import Pipeline
+from sklearn.frozen import FrozenEstimator
+from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -39,7 +50,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 from xgboost import XGBClassifier, XGBRegressor
 
 ROOT = Path(__file__).resolve().parents[1]
-SPLIT_DIR = ROOT / "data/processed/m5_splits_corrected_v2"
+SPLIT_DIR = ROOT / "data/processed/m5_splits"
 FEATURE_CONFIG = ROOT / "reports/m5_feature_selection.json"
 MODEL_DIR = ROOT / "models/m5/corrected_v2"
 REPORT_DIR = ROOT / "reports/corrected_v2"
@@ -57,6 +68,8 @@ CATEGORICAL = [
 ]
 CONGESTION_ORDER = ["Free-flow", "Moderate", "Heavy", "Severe"]
 VALIDATION_CALIBRATION_FRACTION = 0.30
+ACCIDENT_VALIDATION_SELECTION_FRACTION = 0.60
+ACCIDENT_VALIDATION_CALIBRATION_FRACTION = 0.20
 INTERVAL_COVERAGE = 0.90
 
 
@@ -287,6 +300,20 @@ def _classification_candidates(task: str, class_count: int) -> dict[str, Any]:
         ),
     }
     if task == "accident_risk":
+        models["Logistic Regression"] = LogisticRegression(
+            C=0.1,
+            class_weight="balanced",
+            max_iter=2000,
+            random_state=SEED,
+        )
+        models["Extra Trees"] = ExtraTreesClassifier(
+            n_estimators=180,
+            max_depth=18,
+            min_samples_leaf=5,
+            class_weight="balanced",
+            n_jobs=-1,
+            random_state=SEED,
+        )
         models["XGBoost"] = XGBClassifier(
             n_estimators=250,
             max_depth=4,
@@ -330,6 +357,22 @@ def _classification_candidates(task: str, class_count: int) -> dict[str, Any]:
             tree_method="hist",
         )
     else:
+        models["Extra Trees"] = ExtraTreesClassifier(
+            n_estimators=180,
+            max_depth=20,
+            min_samples_leaf=5,
+            class_weight="balanced",
+            n_jobs=-1,
+            random_state=SEED,
+        )
+        models["Hist Gradient Boosting"] = HistGradientBoostingClassifier(
+            learning_rate=0.08,
+            max_iter=150,
+            max_leaf_nodes=15,
+            class_weight="balanced",
+            early_stopping=False,
+            random_state=SEED,
+        )
         models["XGBoost"] = XGBClassifier(
             n_estimators=250,
             max_depth=6,
@@ -340,6 +383,20 @@ def _classification_candidates(task: str, class_count: int) -> dict[str, Any]:
             subsample=0.8,
             colsample_bytree=0.8,
             reg_lambda=1.0,
+            random_state=SEED,
+            n_jobs=4,
+            tree_method="hist",
+        )
+        models["XGBoost (shallow)"] = XGBClassifier(
+            n_estimators=300,
+            max_depth=4,
+            learning_rate=0.04,
+            objective="multi:softprob",
+            num_class=class_count,
+            eval_metric="mlogloss",
+            subsample=0.8,
+            colsample_bytree=0.8,
+            reg_lambda=2.0,
             random_state=SEED,
             n_jobs=4,
             tree_method="hist",
@@ -374,6 +431,14 @@ def _classification_metrics(
     class_labels: list[str],
     task: str,
 ) -> dict:
+    per_class_precision, per_class_recall, per_class_f1, per_class_support = (
+        precision_recall_fscore_support(
+            y_true,
+            predictions,
+            labels=np.arange(len(class_labels)),
+            zero_division=0,
+        )
+    )
     metrics = {
         "accuracy": float(accuracy_score(y_true, predictions)),
         "macro_precision": float(precision_score(
@@ -389,6 +454,15 @@ def _classification_metrics(
             y_true, predictions, labels=np.arange(len(class_labels))
         ).tolist(),
         "class_labels": class_labels,
+        "per_class_metrics": {
+            label: {
+                "precision": float(per_class_precision[index]),
+                "recall": float(per_class_recall[index]),
+                "f1": float(per_class_f1[index]),
+                "support": int(per_class_support[index]),
+            }
+            for index, label in enumerate(class_labels)
+        },
     }
     if task == "accident_risk" and scores is not None:
         metrics.update({
@@ -407,6 +481,154 @@ def _classification_metrics(
     return metrics
 
 
+def _probability_calibration_metrics(
+    y_true: np.ndarray,
+    probabilities: np.ndarray,
+    class_count: int,
+    bin_count: int = 10,
+) -> dict:
+    """Summarize sigmoid-calibrated probability quality on a held-out partition."""
+    truth = np.asarray(y_true, dtype=int).reshape(-1)
+    scores = np.asarray(probabilities, dtype=float)
+    if scores.shape != (len(truth), class_count):
+        raise ValueError("Calibrated probability shape does not match labels.")
+    if not np.isfinite(scores).all() or np.any(scores < 0):
+        raise ValueError("Calibrated probabilities must be finite and non-negative.")
+    if not np.allclose(scores.sum(axis=1), 1.0, atol=1e-6):
+        raise ValueError("Calibrated class probabilities must sum to one.")
+
+    confidence = scores.max(axis=1)
+    predicted = scores.argmax(axis=1)
+    correct = predicted == truth
+    edges = np.linspace(0.0, 1.0, bin_count + 1)
+    bins = []
+    expected_calibration_error = 0.0
+    for lower, upper in zip(edges[:-1], edges[1:]):
+        in_bin = (confidence >= lower) & (
+            confidence <= upper if upper == 1 else confidence < upper
+        )
+        if not in_bin.any():
+            continue
+        mean_confidence = float(confidence[in_bin].mean())
+        accuracy = float(correct[in_bin].mean())
+        expected_calibration_error += (
+            int(in_bin.sum()) / len(truth) * abs(mean_confidence - accuracy)
+        )
+        bins.append({
+            "lower_confidence": float(lower),
+            "upper_confidence": float(upper),
+            "rows": int(in_bin.sum()),
+            "mean_confidence": mean_confidence,
+            "accuracy": accuracy,
+        })
+
+    if class_count == 2:
+        brier_score = float(brier_score_loss(truth, scores[:, 1]))
+    else:
+        one_hot = np.eye(class_count, dtype=float)[truth]
+        brier_score = float(np.mean(np.sum((scores - one_hot) ** 2, axis=1)))
+    return {
+        "method": "held-out sigmoid calibration (Platt for binary; one-vs-rest for multiclass)",
+        "brier_score": brier_score,
+        "log_loss": float(log_loss(truth, scores, labels=np.arange(class_count))),
+        "top_label_expected_calibration_error": float(expected_calibration_error),
+        "reliability_bins": bins,
+        "rows": int(len(truth)),
+        "interpretation": (
+            "Calibration parameters were fitted on the later validation block. "
+            "These test-set diagnostics are evaluation-only and were not used "
+            "for model, threshold, or calibration selection."
+        ),
+    }
+
+
+def _write_classification_diagnostics(
+    task: str,
+    horizon: int,
+    frame: pd.DataFrame,
+    test_mask: pd.Series,
+    target: str,
+    y_true: np.ndarray,
+    predictions: np.ndarray,
+    probabilities: np.ndarray,
+    class_labels: list[str],
+    report_dir: Path,
+) -> dict[str, str]:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import ConfusionMatrixDisplay, RocCurveDisplay
+
+    figure_dir = report_dir / "figures"
+    figure_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"{task}_{horizon}m"
+    paths = {}
+    figure, axis = plt.subplots(figsize=(7, 6))
+    ConfusionMatrixDisplay.from_predictions(
+        y_true,
+        predictions,
+        labels=np.arange(len(class_labels)),
+        display_labels=class_labels,
+        cmap="Blues",
+        xticks_rotation=30,
+        ax=axis,
+        colorbar=False,
+    )
+    axis.set_title(f"{task.replace('_', ' ').title()} · {horizon}m test")
+    figure.tight_layout()
+    confusion_path = figure_dir / f"{stem}_test_confusion_matrix.png"
+    figure.savefig(confusion_path, dpi=160)
+    plt.close(figure)
+    paths["confusion_matrix"] = str(confusion_path.relative_to(ROOT))
+
+    if task == "accident_risk":
+        figure, axes = plt.subplots(1, 2, figsize=(12, 5))
+        RocCurveDisplay.from_predictions(y_true, probabilities[:, 1], ax=axes[0])
+        axes[0].set_title("ROC curve (untouched test)")
+        precision, recall, _ = precision_recall_curve(y_true, probabilities[:, 1])
+        axes[1].plot(recall, precision)
+        axes[1].set_xlabel("Recall")
+        axes[1].set_ylabel("Precision")
+        axes[1].set_title("Precision-recall curve (untouched test)")
+        figure.tight_layout()
+        curve_path = figure_dir / f"{stem}_test_roc_pr.png"
+        figure.savefig(curve_path, dpi=160)
+        plt.close(figure)
+        paths["roc_pr_curves"] = str(curve_path.relative_to(ROOT))
+
+    calibration = _probability_calibration_metrics(
+        y_true, probabilities, len(class_labels)
+    )
+    bins = calibration["reliability_bins"]
+    figure, axis = plt.subplots(figsize=(6, 6))
+    axis.plot([0, 1], [0, 1], linestyle="--", color="gray", label="Ideal")
+    axis.plot(
+        [item["mean_confidence"] for item in bins],
+        [item["accuracy"] for item in bins],
+        marker="o",
+        label="Observed test reliability",
+    )
+    axis.set(xlim=(0, 1), ylim=(0, 1), xlabel="Mean predicted confidence",
+             ylabel="Observed accuracy", title=f"Test reliability · {task} · {horizon}m")
+    axis.legend()
+    figure.tight_layout()
+    reliability_path = figure_dir / f"{stem}_test_reliability.png"
+    figure.savefig(reliability_path, dpi=160)
+    plt.close(figure)
+    paths["reliability_diagram"] = str(reliability_path.relative_to(ROOT))
+
+    test_rows = frame.loc[test_mask, ["road_id", "timestamp", target]].copy()
+    test_rows["predicted_label"] = np.asarray(predictions, dtype=int)
+    for index, label in enumerate(class_labels):
+        safe_label = label.lower().replace(" ", "_").replace("-", "_")
+        test_rows[f"probability_{safe_label}"] = probabilities[:, index]
+    prediction_path = report_dir / f"{stem}_test_predictions.csv"
+    test_rows.to_csv(prediction_path, index=False)
+    paths["test_predictions"] = str(prediction_path.relative_to(ROOT))
+    return paths
+
+
 def _selection_score(task: str, metrics: dict) -> float:
     if task == "accident_risk":
         return float(metrics["PR_AUC"])
@@ -416,6 +638,14 @@ def _selection_score(task: str, metrics: dict) -> float:
 
 
 def _select_accident_threshold(y_true: np.ndarray, scores: np.ndarray) -> float:
+    labels = np.asarray(y_true).reshape(-1)
+    scores = np.asarray(scores, dtype=float).reshape(-1)
+    if len(labels) != len(scores) or not np.isfinite(scores).all():
+        raise ValueError("Accident threshold inputs must be aligned and finite.")
+    if set(np.unique(labels)) != {0, 1}:
+        raise ValueError(
+            "Accident threshold validation block must contain both classes."
+        )
     precision, recall, thresholds = precision_recall_curve(y_true, scores)
     if len(thresholds) == 0:
         raise ValueError("Validation partition cannot support accident threshold selection.")
@@ -448,6 +678,68 @@ def _validation_selection_calibration_masks(
     if not selection_mask.any() or not calibration_mask.any():
         raise ValueError("Validation selection/calibration split is empty.")
     return selection_mask, calibration_mask
+
+
+def _accident_validation_masks(
+    frame: pd.DataFrame,
+    validation_mask: pd.Series,
+    horizon_minutes: int,
+    selection_fraction: float = ACCIDENT_VALIDATION_SELECTION_FRACTION,
+    calibration_fraction: float = ACCIDENT_VALIDATION_CALIBRATION_FRACTION,
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """Create chronological validation blocks with horizon-aware label purging."""
+    if horizon_minutes <= 0:
+        raise ValueError("Accident-risk horizon must be positive.")
+
+    timestamps = (
+        frame.loc[validation_mask, "timestamp"]
+        .drop_duplicates()
+        .sort_values()
+        .reset_index(drop=True)
+    )
+    threshold_fraction = 1 - selection_fraction - calibration_fraction
+    if (
+        len(timestamps) < 3
+        or selection_fraction <= 0
+        or calibration_fraction <= 0
+        or threshold_fraction <= 0
+    ):
+        raise ValueError(
+            "Accident-risk validation requires three non-empty chronological blocks."
+        )
+
+    selection_end = int(np.floor(len(timestamps) * selection_fraction))
+    calibration_end = int(
+        np.floor(len(timestamps) * (selection_fraction + calibration_fraction))
+    )
+    selection_end = min(max(selection_end, 1), len(timestamps) - 2)
+    calibration_end = min(
+        max(calibration_end, selection_end + 1),
+        len(timestamps) - 1,
+    )
+    selection_cutoff = timestamps.iloc[selection_end]
+    calibration_cutoff = timestamps.iloc[calibration_end]
+    label_time = frame["timestamp"] + pd.Timedelta(minutes=horizon_minutes)
+
+    selection_mask = (
+        validation_mask
+        & frame["timestamp"].lt(selection_cutoff)
+        & label_time.lt(selection_cutoff)
+    )
+    calibration_mask = (
+        validation_mask
+        & frame["timestamp"].ge(selection_cutoff)
+        & frame["timestamp"].lt(calibration_cutoff)
+        & label_time.lt(calibration_cutoff)
+    )
+    threshold_mask = validation_mask & frame["timestamp"].ge(calibration_cutoff)
+
+    if not selection_mask.any() or not calibration_mask.any() or not threshold_mask.any():
+        raise ValueError(
+            f"Accident-risk validation blocks are empty after purging the "
+            f"{horizon_minutes}-minute label horizon."
+        )
+    return selection_mask, calibration_mask, threshold_mask
 
 
 def _split_conformal_quantile(
@@ -514,7 +806,7 @@ def _fit_candidate(
         elif task == "accident_risk" and name == "XGBoost (shallow)":
             positives = max(int(np.sum(y_train == 1)), 1)
             estimator.set_params(scale_pos_weight=(len(y_train) - positives) / positives)
-        if task == "congestion_level" and name == "XGBoost":
+        if task == "congestion_level" and name.startswith("XGBoost"):
             estimator.fit(
                 X_train,
                 y_train,
@@ -527,8 +819,7 @@ def _fit_candidate(
     threshold = None
     if task == "accident_risk":
         scores = _positive_scores(estimator, X_validation)
-        threshold = _select_accident_threshold(y_validation, scores)
-        predictions = (scores >= threshold).astype(int)
+        predictions = (scores >= 0.5).astype(int)
         metrics = _classification_metrics(
             y_validation,
             predictions,
@@ -620,13 +911,36 @@ def run_corrected_m5(
                 split: frame["split"].eq(split) & valid
                 for split in ["train", "validation", "test"]
             }
-            (
-                masks["validation_selection"],
-                masks["validation_calibration"],
-            ) = _validation_selection_calibration_masks(
-                frame, masks["validation"]
-            )
-            if any(not mask.any() for mask in masks.values()):
+            if task == "accident_risk":
+                (
+                    masks["validation_selection"],
+                    masks["validation_calibration"],
+                    masks["validation_threshold"],
+                ) = _accident_validation_masks(
+                    frame,
+                    masks["validation"],
+                    horizon_minutes=horizon,
+                )
+            else:
+                (
+                    masks["validation_selection"],
+                    masks["validation_calibration"],
+                ) = _validation_selection_calibration_masks(
+                    frame, masks["validation"]
+                )
+                masks["validation_threshold"] = pd.Series(
+                    False, index=frame.index
+                )
+            required_partitions = [
+                "train",
+                "validation",
+                "test",
+                "validation_selection",
+                "validation_calibration",
+            ]
+            if task == "accident_risk":
+                required_partitions.append("validation_threshold")
+            if any(not masks[partition].any() for partition in required_partitions):
                 raise ValueError(f"Empty valid partition for {task}/{horizon}m")
             preprocessor = _build_preprocessor(features)
             X_train = preprocessor.fit_transform(X_raw.loc[masks["train"]])
@@ -636,11 +950,18 @@ def run_corrected_m5(
             X_calibration = preprocessor.transform(
                 X_raw.loc[masks["validation_calibration"]]
             )
+            X_threshold = (
+                preprocessor.transform(X_raw.loc[masks["validation_threshold"]])
+                if masks["validation_threshold"].any()
+                else None
+            )
             X_test = preprocessor.transform(X_raw.loc[masks["test"]])
             if hasattr(X_train, "toarray"):
                 X_train = X_train.toarray()
                 X_validation = X_validation.toarray()
                 X_calibration = X_calibration.toarray()
+                if X_threshold is not None:
+                    X_threshold = X_threshold.toarray()
                 X_test = X_test.toarray()
 
             label_encoder = None
@@ -654,6 +975,7 @@ def run_corrected_m5(
                     masks["validation_calibration"]
                 ].to_numpy(dtype=float)
                 y_test = y_raw.loc[masks["test"]].to_numpy(dtype=float)
+                y_threshold = None
                 class_labels: list[str] = []
                 candidates = _regression_candidates()
             else:
@@ -689,6 +1011,13 @@ def run_corrected_m5(
                 )
                 y_calibration = label_encoder.transform(y_calibration_text)
                 y_test = label_encoder.transform(y_test_text)
+                y_threshold = (
+                    label_encoder.transform(
+                        _binary_label_text(y_raw.loc[masks["validation_threshold"]])
+                    )
+                    if task == "accident_risk"
+                    else None
+                )
                 class_labels = [str(value) for value in label_encoder.classes_]
                 if task == "congestion_level" and class_labels != CONGESTION_ORDER:
                     raise ValueError(
@@ -711,8 +1040,10 @@ def run_corrected_m5(
                         ("train", y_train),
                         ("validation_selection", y_validation),
                         ("validation_calibration", y_calibration),
+                        ("validation_threshold", y_threshold),
                         ("test", y_test),
                     ]
+                    if values is not None
                 }
 
             validation_results = []
@@ -746,22 +1077,11 @@ def run_corrected_m5(
             selected_model, threshold = fitted_candidates[winner["model"]]
             test_start = time.perf_counter()
 
-            if task == "accident_risk":
-                test_scores = _positive_scores(selected_model, X_test)
-                test_predictions = (test_scores >= float(threshold)).astype(int)
-                test_metrics = _classification_metrics(
-                    y_test, test_predictions, test_scores, class_labels, task
-                )
-                test_metrics["operating_threshold"] = float(threshold)
-            elif task == "congestion_level":
-                test_predictions = selected_model.predict(X_test).astype(int)
-                test_metrics = _classification_metrics(
-                    y_test, test_predictions, None, class_labels, task
-                )
+            if kind == "classification":
+                test_metrics = {}
             else:
                 test_predictions = selected_model.predict(X_test)
                 test_metrics = _regression_metrics(y_test, test_predictions)
-            test_metrics["evaluation_seconds"] = float(time.perf_counter() - test_start)
 
             candidates_path = None
             if task == "traffic_volume":
@@ -783,10 +1103,114 @@ def run_corrected_m5(
                 }, candidates_path, compress=3)
 
             conformal_quantile = None
+            probability_calibrator = None
+            probability_calibration = None
+            classification_probabilities = None
+            if kind == "classification":
+                if set(np.unique(y_calibration)) != set(range(len(class_labels))):
+                    raise ValueError(
+                        f"Validation calibration block lacks classes for "
+                        f"{task}/{horizon}m: {np.unique(y_calibration).tolist()}"
+                    )
+                class_counts = np.unique(y_calibration, return_counts=True)[1]
+                min_class_count = int(class_counts.min())
+
+                if min_class_count < 2:
+                    raise ValueError(
+                        f"Insufficient calibration samples per class for "
+                        f"{task}/{horizon}m: minimum class count is {min_class_count}"
+                    )
+
+                calibration_cv = min(5, min_class_count)
+
+                probability_calibrator = CalibratedClassifierCV(
+                    estimator=FrozenEstimator(selected_model),
+                    method="sigmoid",
+                    cv=calibration_cv,
+                )
+                probability_calibrator.fit(X_calibration, y_calibration)
+                test_probabilities = probability_calibrator.predict_proba(X_test)
+                calibration_class_indices = np.asarray(
+                    probability_calibrator.classes_, dtype=int
+                )
+                if task == "accident_risk":
+                    if X_threshold is None or y_threshold is None:
+                        raise ValueError(
+                            "Accident-risk threshold validation block is missing."
+                        )
+                    positive_index = int(np.flatnonzero(
+                        calibration_class_indices == 1
+                    )[0])
+                    threshold_probabilities = probability_calibrator.predict_proba(
+                        X_threshold
+                    )
+                    threshold = _select_accident_threshold(
+                        y_threshold,
+                        threshold_probabilities[:, positive_index],
+                    )
+                    classification_probabilities = test_probabilities
+                    test_scores = test_probabilities[:, positive_index]
+                    test_predictions = (test_scores >= threshold).astype(int)
+                    test_metrics = _classification_metrics(
+                        y_test,
+                        test_predictions,
+                        test_scores,
+                        class_labels,
+                        task,
+                    )
+                else:
+                    test_predictions = calibration_class_indices[
+                        test_probabilities.argmax(axis=1)
+                    ]
+                    test_metrics = _classification_metrics(
+                        y_test,
+                        test_predictions,
+                        test_probabilities,
+                        class_labels,
+                        task,
+                    )
+                    classification_probabilities = test_probabilities
+                probability_calibration = _probability_calibration_metrics(
+                    y_test,
+                    classification_probabilities,
+                    len(class_labels),
+                )
+                test_metrics["probability_calibration"] = probability_calibration
+                if task == "accident_risk":
+                    test_metrics["operating_threshold"] = float(threshold)
+                diagnostics = _write_classification_diagnostics(
+                    task,
+                    horizon,
+                    frame.loc[masks["test"]],
+                    pd.Series(True, index=frame.index[masks["test"]]),
+                    target,
+                    y_test,
+                    test_predictions,
+                    classification_probabilities,
+                    class_labels,
+                    report_dir,
+                )
+                test_metrics["diagnostic_artifacts"] = diagnostics
+                test_metrics["evaluation_seconds"] = float(
+                    time.perf_counter() - test_start
+                )
+            else:
+                test_metrics["evaluation_seconds"] = float(
+                    time.perf_counter() - test_start
+                )
+
             calibration_period = {
                 "start": str(frame.loc[masks["validation_calibration"], "timestamp"].min()),
                 "end": str(frame.loc[masks["validation_calibration"], "timestamp"].max()),
             }
+            threshold_period = (
+                {
+                    "start": str(frame.loc[masks["validation_threshold"], "timestamp"].min()),
+                    "end": str(frame.loc[masks["validation_threshold"], "timestamp"].max()),
+                }
+                if masks["validation_threshold"].any()
+                else None
+            )
             if task in {"traffic_volume", "travel_time"}:
                 calibration_predictions = np.maximum(
                     selected_model.predict(X_calibration).reshape(-1), 0
@@ -825,6 +1249,32 @@ def run_corrected_m5(
                     else "validation RMSE (minimized)"
                 ),
                 "validation_threshold": threshold,
+                "validation_threshold_period": threshold_period,
+                "validation_threshold_rows": (
+                    int(masks["validation_threshold"].sum())
+                    if threshold_period is not None
+                    else None
+                ),
+                "validation_protocol": (
+                    "Chronological validation blocks: first 60% for model "
+                    "selection, next 20% for sigmoid calibration, final 20% "
+                    "for accident operating-threshold selection."
+                    if task == "accident_risk"
+                    else "Chronological validation selection followed by a "
+                    "later calibration block."
+                ),
+                "probability_calibrator": probability_calibrator,
+                "probability_calibration_method": (
+                    "held-out sigmoid" if probability_calibrator is not None else None
+                ),
+                "probability_calibration_rows": (
+                    int(masks["validation_calibration"].sum())
+                    if probability_calibrator is not None
+                    else None
+                ),
+                "probability_calibration_period": (
+                    calibration_period if probability_calibrator is not None else None
+                ),
                 "conformal_quantile_90": conformal_quantile,
                 "conformal_calibration_rows": int(masks["validation_calibration"].sum()),
                 "conformal_calibration_period": calibration_period,
@@ -847,6 +1297,13 @@ def run_corrected_m5(
                     "end": str(frame.loc[masks["validation_selection"], "timestamp"].max()),
                 },
                 "validation_calibration_period": calibration_period,
+                "validation_threshold_period": threshold_period,
+                "validation_threshold_rows": (
+                    int(masks["validation_threshold"].sum())
+                    if threshold_period is not None
+                    else None
+                ),
+                "validation_protocol": artifact["validation_protocol"],
                 "validation_calibration_rows": int(
                     masks["validation_calibration"].sum()
                 ),
@@ -898,28 +1355,31 @@ def run_corrected_m5(
                 "test_period": result["periods"]["test"],
                 "feature_list": features,
                 "preprocessing": result["preprocessing"],
-                "hyperparameters": {
-                    **selected_model.get_params(),
-                    "epochs_completed": selected_model.epochs_completed_,
-                    "best_validation_mse_scaled":
-                        selected_model.best_validation_mse_scaled_,
-                }
-                if isinstance(selected_model, NumpyGradientRegressor)
-                else selected_model.get_params()
-                if hasattr(selected_model, "get_params")
-                else {
-                    "learning_rate": selected_model.learning_rate,
-                    "max_epochs": selected_model.max_epochs,
-                    "patience": selected_model.patience,
-                    "epochs_completed": selected_model.epochs_completed_,
-                    "best_validation_mse_scaled":
-                        selected_model.best_validation_mse_scaled_,
-                },
+                "hyperparameters": selected_model.get_params(),
                 "validation_metrics": winner["metrics"],
                 "test_metrics": test_metrics,
                 "validation_selected_operating_threshold": threshold,
+                "validation_selection_period": result[
+                    "validation_selection_period"
+                ],
+                "validation_calibration_period": calibration_period,
+                "validation_threshold_period": threshold_period,
+                "validation_protocol": result["validation_protocol"],
                 "uncertainty": (
                     {
+                        "method": "held-out sigmoid classifier probability calibration",
+                        "calibration_rows": artifact["probability_calibration_rows"],
+                        "calibration_period": calibration_period,
+                        "test_calibration_metrics": probability_calibration,
+                        "limitations": (
+                            "Calibration uses a later validation block; test "
+                            "calibration metrics are evaluation-only. Temporal "
+                            "dependence and distribution shift can invalidate "
+                            "calibration after deployment."
+                        ),
+                    }
+                    if probability_calibrator is not None
+                    else {
                         "method": "Split conformal absolute-residual interval",
                         "nominal_coverage": INTERVAL_COVERAGE,
                         "calibration_rows": int(
@@ -944,11 +1404,8 @@ def run_corrected_m5(
                     }
                     if conformal_quantile is not None
                     else {
-                        "method": "No calibrated probability interval",
-                        "limitations": (
-                            "Classification scores/thresholds are not calibrated "
-                            "uncertainty intervals."
-                        ),
+                        "method": "No calibrated probability or regression interval",
+                        "limitations": "No uncertainty calibration applies to this task.",
                     }
                 ),
                 "model_artifact_path": str(artifact_path.relative_to(ROOT)),

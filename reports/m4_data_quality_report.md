@@ -94,6 +94,18 @@ The lag and rolling-window nulls represent historical warm-up periods. They shou
 - capacity_headroom: -0.8359
 - avg_speed: -0.8963
 
+## Accident-risk exploratory analysis
+- Overall incident rate: 0.9349% (1,652 windows with accidents out of 176,701)
+- Severe class imbalance: over 99% of 30-minute windows experience zero reported accidents.
+- Weather impact: Incident rates in Fog and Rain are significantly elevated (over 3.4%) compared to Clear and Cloudy conditions (< 0.85%).
+- Top high-risk corridors:
+  * Central Flyover E: 86 incidents (1.191%)
+  * Airport Underpass: 81 incidents (1.1343%)
+  * Ring Road Terminus: 80 incidents (1.1323%)
+  * Grand Trunk @ Toll: 80 incidents (1.1017%)
+  * Kingsway @ Depot: 76 incidents (1.0756%)
+- Operational implication: Extreme class imbalance makes accident prediction near-stochastic from sensor volume alone; probability calibration and specialized thresholding are mandatory.
+
 ## Modelling considerations
 - Use chronological train/test splitting.
 - Preserve road-segment boundaries when constructing lag features.
@@ -113,3 +125,5 @@ The lag and rolling-window nulls represent historical warm-up periods. They shou
 - `figures/m4/08_correlation_heatmap.png`
 - `figures/m4/09_congestion_by_hour.png`
 - `figures/m4/10_volume_vs_speed.png`
+- `figures/m4/11_accident_distribution_by_road.png`
+- `figures/m4/12_accident_risk_by_weather_and_hour.png`

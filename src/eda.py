@@ -38,7 +38,11 @@ def main():
 
     summary = {
         "module": "M4 - Exploratory Data Analysis",
-        "input": str(INPUT.relative_to(ROOT)),
+        "input": (
+            str(INPUT.relative_to(ROOT))
+            if INPUT.is_relative_to(ROOT)
+            else str(INPUT)
+        ),
         "rows": int(len(df)),
         "columns": int(len(df.columns)),
         "road_segments": int(df["road_id"].nunique()),
@@ -240,6 +244,93 @@ def main():
     save_plot("10_volume_vs_speed.png")
     summary["figures"].append("10_volume_vs_speed.png")
 
+    # 11. Accident distribution by road segment
+    acc_road = (
+        df.groupby("road_name")["accident_count"]
+        .agg(["sum", lambda s: (s > 0).mean() * 100])
+        .rename(columns={"sum": "total_accidents", "<lambda_0>": "incident_rate_pct"})
+        .sort_values("total_accidents", ascending=True)
+        .reset_index()
+    )
+    plt.figure(figsize=(12, 8))
+    plt.barh(acc_road["road_name"], acc_road["total_accidents"], color="#d95f02")
+    plt.title("Total Incident Windows by Road Segment (Jan–May 2025)")
+    plt.xlabel("Reported Incidents (Count)")
+    plt.ylabel("Road Segment")
+    save_plot("11_accident_distribution_by_road.png")
+    summary["figures"].append("11_accident_distribution_by_road.png")
+
+    # 12. Accident risk by weather and hour
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    acc_weather = (
+        df.groupby("weather_condition")["accident_count"]
+        .agg(rate=lambda s: (s > 0).mean() * 100)
+        .reset_index()
+    )
+    sns.barplot(
+        data=acc_weather,
+        x="weather_condition",
+        y="rate",
+        hue="weather_condition",
+        legend=False,
+        ax=axes[0],
+        palette="Blues_d",
+    )
+    axes[0].set_title("Incident Rate (%) by Weather Condition")
+    axes[0].set_xlabel("Weather Condition")
+    axes[0].set_ylabel("Incident Rate (%)")
+    for p in axes[0].patches:
+        height = p.get_height()
+        if np.isfinite(height):
+            axes[0].annotate(
+                f"{height:.2f}%",
+                (p.get_x() + p.get_width() / 2.0, height),
+                ha="center",
+                va="bottom",
+                xytext=(0, 3),
+                textcoords="offset points",
+            )
+
+    acc_hour = (
+        df.groupby("hour")["accident_count"]
+        .agg(["sum", lambda s: (s > 0).mean() * 100])
+        .rename(columns={"sum": "total_accidents", "<lambda_0>": "incident_rate_pct"})
+        .reset_index()
+    )
+    sns.lineplot(
+        data=acc_hour,
+        x="hour",
+        y="total_accidents",
+        marker="o",
+        color="#e41a1c",
+        ax=axes[1],
+    )
+    axes[1].set_title("Reported Incidents by Hour of Day")
+    axes[1].set_xlabel("Hour of Day")
+    axes[1].set_ylabel("Total Incidents")
+    axes[1].set_xticks(range(24))
+
+    save_plot("12_accident_risk_by_weather_and_hour.png")
+    summary["figures"].append("12_accident_risk_by_weather_and_hour.png")
+
+    summary["accident_analysis"] = {
+        "total_accidents": int(df["accident_count"].sum()),
+        "total_incident_windows": int((df["accident_count"] > 0).sum()),
+        "overall_incident_rate_percent": float((df["accident_count"] > 0).mean() * 100),
+        "by_weather_incident_rate_percent": {
+            str(row["weather_condition"]): round(float(row["rate"]), 4)
+            for _, row in acc_weather.iterrows()
+        },
+        "top_5_high_risk_roads": [
+            {
+                "road_name": str(row["road_name"]),
+                "accidents": int(row["total_accidents"]),
+                "incident_rate_pct": round(float(row["incident_rate_pct"]), 4),
+            }
+            for _, row in acc_road.sort_values("total_accidents", ascending=False).head(5).iterrows()
+        ],
+    }
+
     # Save machine-readable EDA report
     with open(REPORT, "w") as f:
         json.dump(summary, f, indent=2)
@@ -297,6 +388,22 @@ def main():
         "correlation_with_traffic_volume"
     ].items():
         report.append(f"- {feature}: {value:.4f}")
+
+    report += [
+        "",
+        "## Accident-risk exploratory analysis",
+        f"- Overall incident rate: {summary['accident_analysis']['overall_incident_rate_percent']:.4f}% ({summary['accident_analysis']['total_incident_windows']:,} windows with accidents out of {len(df):,})",
+        "- Severe class imbalance: over 99% of 30-minute windows experience zero reported accidents.",
+        "- Weather impact: Incident rates in Fog and Rain are significantly elevated (over 3.4%) compared to Clear and Cloudy conditions (< 0.85%).",
+        "- Top high-risk corridors:",
+    ]
+    for road in summary["accident_analysis"]["top_5_high_risk_roads"]:
+        report.append(
+            f"  * {road['road_name']}: {road['accidents']} incidents ({road['incident_rate_pct']}%)"
+        )
+    report += [
+        "- Operational implication: Extreme class imbalance makes accident prediction near-stochastic from sensor volume alone; probability calibration and specialized thresholding are mandatory.",
+    ]
 
     report += [
         "",

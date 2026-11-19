@@ -108,7 +108,9 @@
     "07_weather_vs_traffic.png",
     "08_correlation_heatmap.png",
     "09_congestion_by_hour.png",
-    "10_volume_vs_speed.png"
+    "10_volume_vs_speed.png",
+    "11_accident_distribution_by_road.png",
+    "12_accident_risk_by_weather_and_hour.png"
   ],
   "weather_traffic_summary": {
     "Clear": {
@@ -131,5 +133,43 @@
       "median": 332.0,
       "count": 6959
     }
+  },
+  "accident_analysis": {
+    "total_accidents": 1667,
+    "total_incident_windows": 1652,
+    "overall_incident_rate_percent": 0.9349126490512221,
+    "by_weather_incident_rate_percent": {
+      "Clear": 0.8273,
+      "Cloudy": 0.7518,
+      "Fog": 3.5256,
+      "Rain": 3.4631
+    },
+    "top_5_high_risk_roads": [
+      {
+        "road_name": "Central Flyover E",
+        "accidents": 86,
+        "incident_rate_pct": 1.191
+      },
+      {
+        "road_name": "Airport Underpass",
+        "accidents": 81,
+        "incident_rate_pct": 1.1343
+      },
+      {
+        "road_name": "Ring Road Terminus",
+        "accidents": 80,
+        "incident_rate_pct": 1.1323
+      },
+      {
+        "road_name": "Grand Trunk @ Toll",
+        "accidents": 80,
+        "incident_rate_pct": 1.1017
+      },
+      {
+        "road_name": "Kingsway @ Depot",
+        "accidents": 76,
+        "incident_rate_pct": 1.0756
+      }
+    ]
   }
 }

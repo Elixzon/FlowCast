@@ -51,8 +51,11 @@ def prepare_horizon(
     split_dir: Path = SPLIT_DIR,
     output_dir: Path = OUTPUT_DIR,
     report_dir: Path = REPORT_DIR,
+    sequence_length: int = SEQUENCE_LENGTH,
 ) -> dict:
     """Fit feature encoders on training rows and create within-split sequences."""
+    if sequence_length < 2:
+        raise ValueError("M6 sequence length must be at least two observations.")
     split_file = split_dir / f"horizon_{horizon}.csv"
     if not split_file.exists():
         raise FileNotFoundError(f"Corrected M6 source split not found: {split_file}")
@@ -156,15 +159,15 @@ def prepare_horizon(
         ["road_id", "split"], sort=False
     ):
         part = part.sort_values("timestamp", kind="stable")
-        if len(part) < SEQUENCE_LENGTH:
+        if len(part) < sequence_length:
             continue
         indices = part.index.to_numpy()
         timestamps = part["timestamp"].to_numpy()
         targets = pd.to_numeric(part[target], errors="coerce").to_numpy(dtype=float)
 
-        for end in range(SEQUENCE_LENGTH - 1, len(part)):
+        for end in range(sequence_length - 1, len(part)):
             counters[split_name]["candidate_windows"] += 1
-            start = end - SEQUENCE_LENGTH + 1
+            start = end - sequence_length + 1
             window_times = timestamps[start:end + 1]
             if not np.all(np.diff(window_times) == expected_step):
                 counters[split_name]["gap_rejections"] += 1
@@ -185,7 +188,7 @@ def prepare_horizon(
     summary = {
         "horizon_minutes": horizon,
         "target": target,
-        "sequence_length": SEQUENCE_LENGTH,
+        "sequence_length": sequence_length,
         "feature_names": feature_names,
         "feature_count": len(feature_names),
         "preprocessing_fit_partition": "train",
@@ -238,9 +241,16 @@ def prepare_all(
     output_dir: Path = OUTPUT_DIR,
     report_dir: Path = REPORT_DIR,
     horizons: list[int] | None = None,
+    sequence_length: int = SEQUENCE_LENGTH,
 ) -> list[dict]:
     return [
-        prepare_horizon(horizon, split_dir, output_dir, report_dir)
+        prepare_horizon(
+            horizon,
+            split_dir,
+            output_dir,
+            report_dir,
+            sequence_length=sequence_length,
+        )
         for horizon in (horizons or HORIZONS)
     ]
 

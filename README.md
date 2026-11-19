@@ -18,25 +18,34 @@ acceptance gaps, and release evidence are maintained in
 [the final audit](reports/final_project_audit.md) and
 [the technical report](reports/final_technical_report.md).
 
-The corrected final run is `20261102T172452`. It completed all eight pipeline
-stages from raw inputs in a clean Python 3.11.18 environment. The model
-evaluation used chronological train/validation/test partitions; candidate
-selection and calibration did not use the test set. The test metrics below
-are the frozen results from that run, not values recalculated during this
-handover.
+The corrected final evaluation run is `prd-compliance-20261103-b`, generated
+from the supplied raw inputs under Python 3.11.18. It includes the corrected
+features and encoders, M1 quality analysis, class-imbalance-aware M5
+candidates, matched M6 comparisons, a 24/48/96-step sweep, and selected-model
+feature importance. Candidate selection and calibration used chronological
+training/validation data only; the reported test metrics were not used for
+tuning.
 
 | Target / criterion | Horizon results (30 / 60 / 90 / 120 minutes) | PRD status |
 |---|---|---|
 | Traffic-volume MAPE, target ≤ 12% | 9.8569% / 10.1204% / 10.4251% / 10.3468% | PASS |
-| Congestion macro-F1, target ≥ 0.80 | 0.7651 / 0.7463 / 0.7535 / 0.7326 | FAIL |
-| Accident-risk ROC-AUC, target ≥ 0.75 | 0.6124 / 0.5994 / 0.5500 / 0.5578 | FAIL |
+| Congestion macro-F1, target ≥ 0.80 | 0.7592 / 0.7461 / 0.7571 / 0.7332 | FAIL |
+| Accident-risk ROC-AUC, target ≥ 0.75 | 0.3876 / 0.4006 / 0.5061 / 0.5578 | FAIL |
 | Deep vs. classical matched test RMSE | Deep model is worse by 1.6032 / 7.1501 / 9.0527 / 15.2188 | FAIL |
 
 The M6 comparisons use identical held-out test records for classical and
-sequence models. All 11 dashboard routes and 26 automated tests passed in the
-release review. The dashboard renders stored historical observations because
-the supplied data has no live sensor feed. Accident-risk scores are weak and
-not calibrated; do not use them as dependable incident predictions.
+sequence models. All 11 dashboard routes and 45 automated tests passed in the
+Python 3.11.18 release review. The dashboard renders stored historical
+observations because the supplied data has no live sensor feed. Classifier
+probabilities use held-out sigmoid calibration, but accident-risk
+discrimination remains weak; do not use these scores as dependable incident
+predictions.
+
+Run `prd-compliance-20261103-b` completed all ten stages and has the same
+selected model choices and recorded test metrics as the independent
+`prd-compliance-20261103-a` run. The later run required a stage resume after a
+session interruption, so the strict uninterrupted one-command acceptance
+check remains documented as partial in the audit.
 
 ## Architecture
 
@@ -59,8 +68,8 @@ Raw traffic / weather / calendar CSVs
                     fitted preprocessing, classical models
                           |
                           v
-                    M6 48-step LSTM/GRU/
-                    BiLSTM comparison
+                    M6 24/48/96-step LSTM/GRU
+                    and BiLSTM comparisons
                           |
                           v
        Versioned reports, model cards, curves and artifacts
@@ -147,11 +156,12 @@ From the project root with the Python 3.11 environment active:
 python -m src.run_pipeline
 ```
 
-This runs M1, M2, M3, M4, M5, M6 sequence generation, M6 training, and the
-matched M6 comparison. It starts from the three local raw files, took about
-46 minutes on the verified 16-GB Mac, and writes a new timestamped run rather
-than overwriting previous results. Runtime depends on hardware. The release
-evidence for the completed run is in `reports/corrected_v2/20261102T172452/`.
+This runs M1 data validation/quality analysis, M2 cleaning, M3 feature
+engineering, M4 EDA, M5 model training/evaluation, M6 sequence generation and
+training, matched M6 comparison, the 24/48/96-step sequence sweep, and
+feature-importance export. It starts from the three local raw files and writes
+a new timestamped run rather than overwriting previous results. Runtime
+depends on hardware and is longer than the original 48-step-only run.
 
 The run manifest records input hashes and stage status. If a stage fails,
 inspect its manifest/checkpoint and error first. After correcting the cause,
@@ -162,12 +172,13 @@ python -m src.run_pipeline --run-id <run-id> --start-at <stage>
 ```
 
 Supported stages are `m1`, `m2`, `m3`, `m4`, `m5`, `m6_sequences`,
-`m6_train`, and `m6_compare`. Resume requires unchanged raw-input hashes.
+`m6_train`, `m6_compare`, `m6_sequence_sweep`, and `feature_importance`.
+Resume requires unchanged raw-input hashes.
 Use a new run ID for a fresh reproduction; an existing completed run is not
 overwritten.
 
-Generate tree-based feature-importance reports for the latest completed
-corrected run:
+The full pipeline generates feature-importance reports for the selected M5
+models. To regenerate reports for the latest completed corrected run:
 
 ```bash
 python -m src.feature_importance
@@ -177,12 +188,14 @@ The CSV and Markdown outputs are written into that run's versioned report
 directory. To regenerate for a specific completed corrected run:
 
 ```bash
-python -m src.feature_importance --run-id 20261102T172452
+python -m src.feature_importance --run-id prd-compliance-20261103-b
 ```
 
 Feature importance is a model-specific association, not a causal explanation.
-The tool uses the selected saved model and its training-fitted preprocessor;
-it does not fit models or use the test partition.
+Tree models use native importance, linear models use absolute coefficients,
+and other estimators use absolute permutation importance on the early
+validation-selection block. The exporter uses the selected saved model and its
+training-fitted preprocessor; it does not fit models or use the test partition.
 
 ## Tests
 
@@ -196,7 +209,7 @@ python -m pytest -q
 In a fresh clone without a completed run, the dashboard route test is skipped;
 that skip is not evidence that the dashboard works. The release review
 verified all 11 routes against the persisted corrected run. Final handover
-validation completed with **26 passed in 144.26 seconds** on Python 3.11.18.
+validation completed with **45 passed in 56.29 seconds** on Python 3.11.18.
 
 ## Start the dashboard
 
@@ -219,8 +232,9 @@ retrain models.
 Regression forecasts include 90% split-conformal residual intervals
 calibrated on a later validation block. Their nominal coverage is not
 guaranteed for temporally dependent or shifted data; some deep-model held-out
-coverage was below 90%. Classification scores are not independently
-calibrated.
+coverage was below 90%. Classifier probabilities use sigmoid calibration
+fitted on a later validation block. Test-set reliability diagnostics are
+evaluation-only; calibration does not remedy weak accident-risk ranking.
 
 ## Troubleshooting
 

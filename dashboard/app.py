@@ -2,10 +2,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from io import BytesIO
 from datetime import time, timedelta
 from pathlib import Path
 import time as clock
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import joblib
 import numpy as np
@@ -36,6 +41,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from src.ingest import EXPECTED, _validate_frame
 from src.upload_inference import (
     predict_latest_uploaded_rows,
+    persist_upload_predictions,
     process_uploaded_sources,
 )
 
@@ -219,6 +225,16 @@ def load_model_bundle(task: str, horizon: int) -> dict:
         "preprocessor": preprocessor,
         "model": model,
         "label_encoder": label_encoder,
+        "probability_calibrator": (
+            saved.get("probability_calibrator")
+            if isinstance(saved, dict)
+            else None
+        ),
+        "probability_calibration_method": (
+            saved.get("probability_calibration_method")
+            if isinstance(saved, dict)
+            else None
+        ),
         "validation_threshold": (
             saved.get("validation_threshold")
             if isinstance(saved, dict)
@@ -250,6 +266,73 @@ def decode_predictions(bundle: dict, predictions: np.ndarray) -> np.ndarray:
             np.asarray(predictions, dtype=int)
         )
     return predictions
+
+
+def predict_bundle_rows(
+    bundle: dict,
+    transformed: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None, str | None]:
+    """Apply the saved task-specific inference policy to transformed rows."""
+    task = bundle["task"]
+    model = bundle["model"]
+    if TASKS[task]["kind"] == "regression":
+        predictions = np.asarray(model.predict(transformed)).reshape(-1)
+        return np.maximum(predictions, 0), None, None, None
+
+    calibrator = bundle["probability_calibrator"]
+    if task == "accident_risk":
+        if calibrator is not None:
+            probabilities = calibrator.predict_proba(transformed)
+            positive_columns = np.flatnonzero(
+                np.asarray(calibrator.classes_).astype(str) == "1"
+            )
+            if len(positive_columns) != 1:
+                raise ValueError(
+                    "Calibrated accident model has no unique positive class."
+                )
+            scores = probabilities[:, positive_columns[0]]
+            score_name = "accident_risk_probability"
+            confidence_probabilities = probabilities
+        elif hasattr(model, "predict_proba"):
+            probabilities = model.predict_proba(transformed)
+            positive_columns = np.flatnonzero(
+                np.asarray(model.classes_).astype(str) == "1"
+            )
+            if len(positive_columns) != 1:
+                raise ValueError("Accident model has no unique positive class.")
+            scores = probabilities[:, positive_columns[0]]
+            score_name = "accident_risk_uncalibrated_score"
+            confidence_probabilities = None
+        elif hasattr(model, "decision_function"):
+            scores = np.asarray(model.decision_function(transformed)).reshape(-1)
+            score_name = "accident_risk_uncalibrated_score"
+            confidence_probabilities = None
+        else:
+            raise TypeError(
+                f"Selected accident-risk model has no score method: {type(model).__name__}"
+            )
+        threshold = bundle["validation_threshold"]
+        if threshold is None:
+            raise ValueError(
+                "Selected accident-risk artifact has no validation threshold."
+            )
+        predictions = (scores >= float(threshold)).astype(int)
+        return (
+            decode_predictions(bundle, predictions),
+            confidence_probabilities,
+            scores,
+            score_name,
+        )
+
+    if calibrator is not None:
+        probabilities = calibrator.predict_proba(transformed)
+        predictions = np.asarray(calibrator.classes_)[
+            probabilities.argmax(axis=1)
+        ]
+    else:
+        probabilities = None
+        predictions = np.asarray(model.predict(transformed)).reshape(-1)
+    return decode_predictions(bundle, predictions), probabilities, None, None
 
 
 def conformal_interval_radius(bundle: dict) -> float:
@@ -480,37 +563,14 @@ def render_live_predictions(frame: pd.DataFrame, horizon: int) -> None:
                 st.warning(f"No complete latest records are available for {task}.")
                 continue
             transformed = bundle["preprocessor"].transform(raw_x.loc[complete])
-            predictions = bundle["model"].predict(transformed).reshape(-1)
-            scores = None
-            score_name = ""
+            predictions, task_probabilities, scores, score_name = (
+                predict_bundle_rows(bundle, transformed)
+            )
             if task == "accident_risk":
-                model = bundle["model"]
-                if hasattr(model, "predict_proba"):
-                    scores = model.predict_proba(transformed)[:, 1]
-                    score_name = "accident_risk_score"
-                    st.caption(
-                        "Accident score is the selected model's positive-class "
-                        "probability; it is not independently calibrated."
-                    )
-                elif hasattr(model, "decision_function"):
-                    scores = model.decision_function(transformed).reshape(-1)
-                    score_name = "accident_risk_decision_score"
-                    st.caption(
-                        "This SVM exposes a decision score, not a calibrated probability."
-                    )
-                else:
-                    raise TypeError(
-                        f"Selected accident-risk model has no score method: {type(model).__name__}"
-                    )
-                threshold = bundle["validation_threshold"]
-                if threshold is None:
-                    raise ValueError(
-                        "Selected accident-risk artifact has no validation threshold."
-                    )
-                predictions = (scores >= float(threshold)).astype(int)
-            elif TASKS[task]["kind"] == "regression":
-                predictions = np.maximum(predictions, 0)
-            predictions = decode_predictions(bundle, predictions)
+                st.caption(
+                    "Accident scores use held-out sigmoid calibration when saved; "
+                    "otherwise they are uncalibrated and performance remains weak."
+                )
             task_output = pd.DataFrame({
                 "road_id": latest.loc[complete, "road_id"].to_numpy(),
                 task: predictions,
@@ -518,12 +578,11 @@ def render_live_predictions(frame: pd.DataFrame, horizon: int) -> None:
                     bundle["artifact"].relative_to(ROOT)
                 ),
             })
-            if (
-                TASKS[task]["kind"] == "classification"
-                and hasattr(bundle["model"], "predict_proba")
-            ):
-                task_probabilities = bundle["model"].predict_proba(transformed)
+            if task_probabilities is not None:
                 task_output[f"{task}_confidence"] = task_probabilities.max(axis=1)
+                task_output[f"{task}_confidence_type"] = (
+                    "held_out_sigmoid_calibrated_probability"
+                )
             output = output.merge(task_output, on="road_id", how="left", validate="one_to_one")
 
             if task == "accident_risk":
@@ -531,6 +590,11 @@ def render_live_predictions(frame: pd.DataFrame, horizon: int) -> None:
                     score_frame = pd.DataFrame({
                         "road_id": latest.loc[complete, "road_id"].to_numpy(),
                         score_name: scores,
+                        "accident_risk_score_type": (
+                            "held_out_sigmoid_calibrated_probability"
+                            if bundle["probability_calibrator"] is not None
+                            else "uncalibrated_model_score"
+                        ),
                     })
                     output = output.merge(
                         score_frame, on="road_id", how="left", validate="one_to_one"
@@ -552,8 +616,8 @@ def render_live_predictions(frame: pd.DataFrame, horizon: int) -> None:
         "Latest observed records are inputs; forecasts are model outputs for the "
         "selected horizon. Regression intervals use a later validation block "
         "reserved for split-conformal calibration; time dependence and shift "
-        "limit coverage guarantees. "
-        "Classification confidence scores are not independently calibrated."
+        "limit coverage guarantees. Classifier confidence is shown only when "
+        "the selected artifact contains held-out sigmoid calibration."
     )
     st.download_button(
         "Download predictions CSV",
@@ -578,10 +642,7 @@ def render_forecast_plot(task: str, horizon: int) -> None:
         return
     x = bundle["X"].loc[selected.index]
     transformed = bundle["preprocessor"].transform(x)
-    predictions = bundle["model"].predict(transformed).reshape(-1)
-    if TASKS[task]["kind"] == "regression":
-        predictions = np.maximum(predictions, 0)
-    predictions = decode_predictions(bundle, predictions)
+    predictions, _, _, _ = predict_bundle_rows(bundle, transformed)
     selected["prediction"] = predictions
     selected["actual"] = bundle["y"].loc[selected.index].to_numpy()
     if len(selected) > 2500:
@@ -789,32 +850,69 @@ def main() -> None:
     elif page == "Feature Importance":
         st.subheader("Model-derived feature importance")
         task = st.selectbox(
-            "Tree-model target",
-            ["traffic_volume", "travel_time", "congestion_level"],
+            "Forecast target",
+            list(TASKS),
         )
-        bundle = load_model_bundle(task, horizon)
-        model = bundle["model"]
-        if not hasattr(model, "feature_importances_"):
-            st.info("The selected saved estimator does not expose tree feature importance.")
-        else:
-            names = bundle["preprocessor"].get_feature_names_out()
-            values = np.asarray(model.feature_importances_)
-            if len(names) != len(values):
-                raise ValueError("Feature-importance names do not match model inputs.")
-            importance = pd.DataFrame({
-                "feature": names,
-                "importance": values,
-            }).nlargest(25, "importance")
+        manifest = load_run_manifest()
+        importance_path = (
+            ROOT / manifest["paths"]["report_dir"] / "m5_feature_importance.csv"
+        )
+        if importance_path.is_file():
+            saved_importance = pd.read_csv(importance_path)
+            importance = saved_importance.loc[
+                saved_importance["task"].eq(task)
+                & saved_importance["horizon_minutes"].eq(horizon)
+            ]
+            if importance.empty:
+                raise ValueError(
+                    f"Saved feature importance is missing for {task}/{horizon}m."
+                )
+            st.caption(
+                f"Selected model: {importance['model'].iloc[0]}. "
+                f"Method: {importance['importance_method'].iloc[0]}."
+            )
+            importance = importance.nlargest(25, "importance").rename(
+                columns={"source_feature": "feature"}
+            )
             st.plotly_chart(
                 px.bar(
                     importance.sort_values("importance"),
                     x="importance",
                     y="feature",
                     orientation="h",
-                    title="Top model-derived features",
+                    title="Top selected-model features",
                 ),
                 use_container_width=True,
             )
+        else:
+            bundle = load_model_bundle(task, horizon)
+            model = bundle["model"]
+            values = getattr(model, "feature_importances_", None)
+            if values is None:
+                st.info(
+                    "The saved feature-importance report is missing. Run "
+                    "`python -m src.feature_importance` to generate it."
+                )
+            else:
+                names = bundle["preprocessor"].get_feature_names_out()
+                if len(names) != len(values):
+                    raise ValueError(
+                        "Feature-importance names do not match model inputs."
+                    )
+                importance = pd.DataFrame({
+                    "feature": names,
+                    "importance": values,
+                }).nlargest(25, "importance")
+                st.plotly_chart(
+                    px.bar(
+                        importance.sort_values("importance"),
+                        x="importance",
+                        y="feature",
+                        orientation="h",
+                        title="Top model-derived features",
+                    ),
+                    use_container_width=True,
+                )
         st.caption("Importance is model-derived association, not causal evidence.")
 
     elif page == "Forecast Visualization":
@@ -954,12 +1052,21 @@ def main() -> None:
                             load_run_manifest()["run_id"],
                         )
                     )
+                    prediction_manifest = persist_upload_predictions(
+                        processed_upload,
+                        uploaded_predictions,
+                        upload_task,
+                        horizon,
+                        load_run_manifest()["run_id"],
+                        skipped_rows,
+                    )
             except (FileNotFoundError, ValueError, pd.errors.ParserError) as error:
                 st.error(f"Upload processing or prediction failed: {error}")
             else:
                 st.success(
                     f"Completed upload run {processed_upload['manifest']['run_id']}. "
-                    f"Skipped {skipped_rows} roads with no feature-complete upload record."
+                    f"Skipped {skipped_rows} roads with no feature-complete upload record. "
+                    "Predictions and lineage were persisted."
                 )
                 st.json({
                     "processed_rows": processed_upload["m3"]["output_rows"],
@@ -975,6 +1082,7 @@ def main() -> None:
                         ]
                     ),
                     "feature_file": processed_upload["manifest"]["feature_file"],
+                    "prediction_manifest": prediction_manifest,
                 })
                 st.dataframe(
                     uploaded_predictions,

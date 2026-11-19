@@ -19,6 +19,8 @@ STAGES = [
     "m6_sequences",
     "m6_train",
     "m6_compare",
+    "m6_sequence_sweep",
+    "feature_importance",
 ]
 RAW_FILES = [
     "traffic_sensor_log.csv",
@@ -51,8 +53,20 @@ def _checkpoint(path: Path, stage: str, raw_hashes: dict[str, str], details: dic
 
 def _run_m1(raw_dir: Path, report_dir: Path) -> dict:
     from src.ingest import run_validation
+    from src.data_quality import write_quality_report
 
-    return run_validation(raw_dir=raw_dir, reports_dir=report_dir / "m1")
+    details = run_validation(raw_dir=raw_dir, reports_dir=report_dir / "m1")
+    quality = write_quality_report(
+        raw_dir,
+        report_dir / "m1" / "data_quality_report.json",
+        report_dir / "m1" / "data_quality_report.md",
+    )
+    details["statistical_outlier_analysis"] = {
+        "json_report": quality["json_report"],
+        "markdown_report": quality["markdown_report"],
+        "policy": "Review-only IQR flags; no statistical outlier is automatically removed.",
+    }
+    return details
 
 
 def _run_m2(raw_dir: Path, interim_dir: Path, report_dir: Path) -> dict:
@@ -233,6 +247,8 @@ def run_pipeline(
     for pending_stage in STAGES[first_stage:]:
         run_manifest["stages"].pop(pending_stage, None)
 
+    run_manifest["status"] = "running"
+    _json_write(run_manifest_path, run_manifest)
     try:
         for stage in STAGES[first_stage:]:
             print(f"\n=== FlowCast {stage} ===", flush=True)
@@ -307,7 +323,7 @@ def run_pipeline(
                         for item in trained
                     ],
                 }
-            else:
+            elif stage == "m6_compare":
                 from src.m6_corrected_comparison import compare_all
 
                 comparisons = compare_all(
@@ -323,6 +339,40 @@ def run_pipeline(
                         for item in comparisons
                     },
                     "same_test_rows_per_horizon": True,
+                }
+            elif stage == "m6_sequence_sweep":
+                from src.m6_sequence_length_sweep import run_sequence_length_sweep
+
+                sweep_results = run_sequence_length_sweep(
+                    split_dir=split_dir,
+                    base_sequence_dir=sequence_dir,
+                    m5_model_dir=m5_model_dir,
+                    model_dir=m6_model_dir,
+                    report_dir=report_dir,
+                )
+                details = {
+                    "sequence_lengths": [24, 48, 96],
+                    "horizons": {
+                        str(item["horizon_minutes"]): {
+                            "selected_deep_model": item["selected_deep_model"],
+                            "matched_test_records": item["matched_test_records"],
+                            "deep_rmse": item["selected_deep_test_rmse"],
+                            "classical_rmse": item["classical_test_rmse"],
+                        }
+                        for item in sweep_results
+                    },
+                    "test_used_for_selection": False,
+                }
+            else:
+                from src.feature_importance import generate_feature_importance
+
+                csv_path, markdown_path = generate_feature_importance(
+                    run_id,
+                    allow_in_progress=True,
+                )
+                details = {
+                    "csv_report": str(csv_path.relative_to(ROOT)),
+                    "markdown_report": str(markdown_path.relative_to(ROOT)),
                 }
 
             run_manifest["stages"][stage] = {

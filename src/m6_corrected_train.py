@@ -94,6 +94,9 @@ def train_one(
     sequence_dir: Path = SEQUENCE_DIR,
     model_dir: Path = MODEL_DIR,
     report_dir: Path = REPORT_DIR,
+    sequence_length: int = 48,
+    validation_selection_end: str | pd.Timestamp | None = None,
+    validation_keys: set[tuple[str, pd.Timestamp]] | None = None,
 ) -> dict:
     """Fit on train, select epoch on validation, and do not read test data."""
     train_file = sequence_dir / f"train_{horizon}m.npz"
@@ -110,14 +113,43 @@ def train_one(
     validation_timestamps = pd.to_datetime(
         validation_data["timestamp"], errors="raise"
     )
-    validation_selection_mask, validation_calibration_mask = (
-        _validation_selection_calibration_masks(
-            validation_data["timestamp"]
+    if validation_selection_end is None:
+        validation_selection_mask, validation_calibration_mask = (
+            _validation_selection_calibration_masks(
+                validation_data["timestamp"]
+            )
         )
-    )
+    else:
+        selection_end = pd.Timestamp(validation_selection_end)
+        validation_selection_mask = np.asarray(
+            validation_timestamps < selection_end
+        )
+        validation_calibration_mask = ~validation_selection_mask
+        if not validation_selection_mask.any() or not validation_calibration_mask.any():
+            raise ValueError(
+                "Shared M6 validation boundary leaves an empty selection or "
+                "calibration partition."
+            )
+    if validation_keys is not None:
+        validation_pairs = zip(
+            validation_data["road_id"].astype(str),
+            validation_timestamps,
+        )
+        shared_validation_mask = np.fromiter(
+            (key in validation_keys for key in validation_pairs),
+            dtype=bool,
+            count=len(validation_timestamps),
+        )
+        validation_selection_mask &= shared_validation_mask
+        validation_calibration_mask &= shared_validation_mask
+        if not validation_selection_mask.any() or not validation_calibration_mask.any():
+            raise ValueError(
+                "Matched M6 validation keys leave an empty selection or "
+                "calibration partition."
+            )
     X_validation_selection = X_validation[validation_selection_mask]
     y_validation_selection = y_validation[validation_selection_mask]
-    if X_train.ndim != 3 or X_train.shape[1] != 48:
+    if X_train.ndim != 3 or X_train.shape[1] != sequence_length:
         raise ValueError(f"Unexpected M6 input shape: {X_train.shape}")
     if not np.isfinite(X_train).all() or not np.isfinite(X_validation).all():
         raise ValueError("Non-finite sequence values reached M6 training.")
@@ -136,6 +168,8 @@ def train_one(
     figure_dir = report_dir / "figures"
     figure_dir.mkdir(parents=True, exist_ok=True)
     stem = f"{model_type.lower().replace(' ', '_')}_{horizon}m"
+    if sequence_length != 48:
+        stem += f"_seq{sequence_length}"
     model_path = model_dir / f"{stem}.keras"
     model = build_model(model_type, (X_train.shape[1], X_train.shape[2]))
     callbacks = [
@@ -229,7 +263,7 @@ def train_one(
             "training_standard_deviation": target_scale,
         },
         "hyperparameters": {
-            "sequence_length": 48,
+            "sequence_length": sequence_length,
             "units": 64,
             "dropout": 0.2,
             "dense_units": 32,
@@ -267,6 +301,7 @@ def train_all(
     report_dir: Path = REPORT_DIR,
     horizons: list[int] | None = None,
     model_types: list[str] | None = None,
+    sequence_length: int = 48,
 ) -> list[dict]:
     """Train LSTM/GRU at every horizon and a historical BiLSTM comparison."""
     requested_horizons = horizons or HORIZONS
@@ -280,6 +315,7 @@ def train_all(
                 sequence_dir,
                 model_dir,
                 report_dir,
+                sequence_length,
             ))
             print(
                 f"Trained {model_type} {horizon}m: "

@@ -5,16 +5,28 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src import m6_corrected_sequences, run_pipeline
-from src import feature_selection, preprocessing, upload_inference
+from src import (
+    feature_importance,
+    feature_selection,
+    m5_corrected_experiments,
+    m6_corrected_sequences,
+    m6_sequence_length_sweep,
+    preprocessing,
+    run_pipeline,
+    upload_inference,
+)
 from src.m5_corrected_experiments import (
     CONGESTION_ORDER,
     NumpyGradientRegressor,
     StableLinearRegressor,
     _build_preprocessor,
     _binary_label_text,
+    _classification_metrics,
+    _probability_calibration_metrics,
     _split_conformal_quantile,
+    _accident_validation_masks,
     _validation_selection_calibration_masks,
+    _write_classification_diagnostics,
     run_corrected_m5,
     _select_accident_threshold,
 )
@@ -24,7 +36,7 @@ from src.m6_corrected_sequences import (
     NUMERIC,
     STANDARD_NUMERIC,
 )
-from dashboard.app import build_selected_range_report
+from dashboard.app import build_selected_range_report, predict_bundle_rows
 
 
 def test_stable_linear_regression_handles_rank_deficient_features():
@@ -75,6 +87,197 @@ def test_accident_threshold_is_selected_from_validation_scores():
     )
 
     assert 0.3 <= threshold <= 0.9
+
+
+@pytest.mark.parametrize("horizon_minutes", [30, 60, 90, 120])
+def test_accident_validation_masks_purge_labels_across_block_boundaries(
+    horizon_minutes,
+):
+    timestamps = pd.date_range("2025-01-01", periods=40, freq="30min")
+    frame = pd.DataFrame({"timestamp": timestamps})
+    validation = pd.Series(True, index=frame.index)
+
+    selection, calibration, threshold = _accident_validation_masks(
+        frame,
+        validation,
+        horizon_minutes=horizon_minutes,
+    )
+
+    assert selection.any() and calibration.any() and threshold.any()
+
+    selection_cutoff = frame.loc[calibration, "timestamp"].min()
+    threshold_cutoff = frame.loc[threshold, "timestamp"].min()
+    label_time = frame["timestamp"] + pd.Timedelta(minutes=horizon_minutes)
+
+    assert (label_time.loc[selection] < selection_cutoff).all()
+    assert (label_time.loc[calibration] < threshold_cutoff).all()
+    assert frame.loc[selection, "timestamp"].max() < selection_cutoff
+    assert frame.loc[calibration, "timestamp"].max() < threshold_cutoff
+    assert not (selection & calibration).any()
+    assert not (selection & threshold).any()
+    assert not (calibration & threshold).any()
+
+
+def test_accident_threshold_requires_both_validation_classes():
+    with pytest.raises(ValueError, match="both classes"):
+        _select_accident_threshold(
+            np.array([0, 0, 0]),
+            np.array([0.1, 0.2, 0.3]),
+        )
+
+
+def test_dashboard_prediction_uses_calibrated_accident_threshold():
+    class BaseModel:
+        def predict(self, values):
+            return np.zeros(len(values), dtype=int)
+
+    class Calibrator:
+        classes_ = np.array([0, 1])
+
+        def predict_proba(self, values):
+            positive = values[:, 0]
+            return np.column_stack([1 - positive, positive])
+
+    bundle = {
+        "task": "accident_risk",
+        "model": BaseModel(),
+        "probability_calibrator": Calibrator(),
+        "validation_threshold": 0.6,
+        "label_encoder": None,
+    }
+
+    predictions, probabilities, scores, score_name = predict_bundle_rows(
+        bundle,
+        np.array([[0.8], [0.4]]),
+    )
+
+    assert predictions.tolist() == [1, 0]
+    np.testing.assert_allclose(
+        probabilities,
+        [[0.2, 0.8], [0.6, 0.4]],
+        rtol=1e-7,
+        atol=1e-9,
+    )
+    assert scores.tolist() == [0.8, 0.4]
+    assert score_name == "accident_risk_probability"
+
+
+def test_dashboard_prediction_uses_calibrated_congestion_labels():
+    class Encoder:
+        def inverse_transform(self, values):
+            labels = np.array(CONGESTION_ORDER)
+            return labels[values]
+
+    class BaseModel:
+        def predict(self, values):
+            return np.zeros(len(values), dtype=int)
+
+    class Calibrator:
+        classes_ = np.arange(4)
+
+        def predict_proba(self, values):
+            probabilities = np.zeros((len(values), 4))
+            probabilities[0, 2] = 0.7
+            probabilities[0, 1] = 0.3
+            probabilities[1, 0] = 0.8
+            probabilities[1, 1] = 0.2
+            return probabilities
+
+    bundle = {
+        "task": "congestion_level",
+        "model": BaseModel(),
+        "probability_calibrator": Calibrator(),
+        "label_encoder": Encoder(),
+        "validation_threshold": None,
+    }
+
+    predictions, probabilities, scores, score_name = predict_bundle_rows(
+        bundle,
+        np.zeros((2, 1)),
+    )
+
+    assert predictions.tolist() == ["Heavy", "Free-flow"]
+    assert probabilities.shape == (2, 4)
+    assert scores is None
+    assert score_name is None
+
+
+def test_dashboard_regression_prediction_keeps_nonnegative_point_behavior():
+    class Model:
+        def predict(self, values):
+            return np.array([-2.0, 5.0])
+
+    predictions, probabilities, scores, score_name = predict_bundle_rows(
+        {
+            "task": "traffic_volume",
+            "model": Model(),
+            "probability_calibrator": None,
+            "label_encoder": None,
+        },
+        np.zeros((2, 1)),
+    )
+
+    assert predictions.tolist() == [0.0, 5.0]
+    assert probabilities is None
+    assert scores is None
+    assert score_name is None
+
+
+def test_classification_metrics_include_per_class_support_and_scores():
+    metrics = _classification_metrics(
+        np.array([0, 0, 1, 1]),
+        np.array([0, 1, 1, 1]),
+        np.array([0.1, 0.7, 0.8, 0.9]),
+        ["0", "1"],
+        "accident_risk",
+    )
+
+    assert metrics["per_class_metrics"]["0"]["support"] == 2
+    assert metrics["per_class_metrics"]["1"]["recall"] == 1.0
+    assert metrics["confusion_matrix"] == [[1, 1], [0, 2]]
+
+
+def test_probability_calibration_metrics_validate_probability_simplex():
+    metrics = _probability_calibration_metrics(
+        np.array([0, 1, 0, 1]),
+        np.array([[0.9, 0.1], [0.2, 0.8], [0.6, 0.4], [0.1, 0.9]]),
+        class_count=2,
+    )
+
+    assert metrics["method"].startswith("held-out sigmoid")
+    assert metrics["brier_score"] < 0.1
+    assert metrics["rows"] == 4
+    assert sum(item["rows"] for item in metrics["reliability_bins"]) == 4
+
+
+def test_test_classification_diagnostics_write_curves_and_prediction_lineage(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(m5_corrected_experiments, "ROOT", tmp_path)
+    frame = pd.DataFrame({
+        "road_id": ["R1", "R1", "R2", "R2"],
+        "timestamp": pd.date_range("2025-01-01", periods=4, freq="30min"),
+        "target": [0, 1, 0, 1],
+    }, index=[10, 11, 12, 13])
+    mask = pd.Series(True, index=frame.index)
+    paths = _write_classification_diagnostics(
+        "accident_risk",
+        30,
+        frame,
+        mask,
+        "target",
+        np.array([0, 1, 0, 1]),
+        np.array([0, 1, 0, 1]),
+        np.array([[0.8, 0.2], [0.1, 0.9], [0.7, 0.3], [0.2, 0.8]]),
+        ["0", "1"],
+        tmp_path,
+    )
+
+    assert {"confusion_matrix", "roc_pr_curves", "reliability_diagram"} <= set(paths)
+    assert all((tmp_path / path).is_file() for path in paths.values())
+    prediction = pd.read_csv(tmp_path / "accident_risk_30m_test_predictions.csv")
+    assert prediction["road_id"].tolist() == ["R1", "R1", "R2", "R2"]
+    assert prediction["probability_1"].tolist() == pytest.approx([0.2, 0.9, 0.3, 0.8])
 
 
 def test_split_conformal_quantile_uses_finite_sample_order_statistic():
@@ -212,6 +415,23 @@ def test_m6_sequences_are_contiguous_and_confined_to_each_partition(tmp_path, mo
     assert len(preprocessor["scaler"].mean_) == len(STANDARD_NUMERIC)
     assert len(preprocessor["minmax_scaler"].data_min_) == len(MINMAX_NUMERIC)
 
+    shorter_summary = m6_corrected_sequences.prepare_horizon(
+        30,
+        split_dir=split_dir,
+        output_dir=tmp_path / "sequences_24",
+        report_dir=tmp_path / "reports_24",
+        sequence_length=24,
+    )
+    assert shorter_summary["sequence_length"] == 24
+    shorter_train = np.load(
+        tmp_path / "sequences_24" / "train_30m.npz"
+    )
+    assert shorter_train["X"].shape[1:] == (
+        24,
+        shorter_summary["feature_count"],
+    )
+    assert len(shorter_train["y"]) == 37
+
 
 def test_m5_rejects_all_future_target_columns_as_features(tmp_path):
     split_dir = tmp_path / "splits"
@@ -237,6 +457,65 @@ def test_m5_rejects_all_future_target_columns_as_features(tmp_path):
             horizons=[30],
             tasks=["traffic_volume"],
         )
+
+
+def test_m5_fits_heldout_calibrators_and_persists_test_diagnostics(
+    tmp_path, monkeypatch
+):
+    rows = []
+    split_ranges = {
+        "train": range(0, 80),
+        "validation": range(80, 120),
+        "test": range(120, 152),
+    }
+    labels = ["Free-flow", "Moderate", "Heavy", "Severe"]
+    for split_name, time_indices in split_ranges.items():
+        for time_index in time_indices:
+            for road_index, road_id in enumerate(("R1", "R2")):
+                local_index = time_index + road_index
+                rows.append({
+                    "road_id": road_id,
+                    "timestamp": (
+                        pd.Timestamp("2025-01-01")
+                        + pd.Timedelta(minutes=30 * time_index)
+                    ).isoformat(),
+                    "split": split_name,
+                    "signal_timing": float(local_index % 12),
+                    "accident_risk_t_plus_30": int(local_index % 9 == 0),
+                    "congestion_level_t_plus_30": labels[local_index % 4],
+                })
+    split_dir = tmp_path / "splits"
+    split_dir.mkdir()
+    pd.DataFrame(rows).to_csv(split_dir / "horizon_30.csv", index=False)
+    feature_config = tmp_path / "features.json"
+    feature_config.write_text(json.dumps({
+        "feature_sets": {
+            "accident_risk": ["road_id", "signal_timing"],
+            "congestion_level": ["road_id", "signal_timing"],
+        }
+    }))
+    monkeypatch.setattr(m5_corrected_experiments, "ROOT", tmp_path)
+
+    results = run_corrected_m5(
+        split_dir=split_dir,
+        feature_config_path=feature_config,
+        model_dir=tmp_path / "models",
+        report_dir=tmp_path / "reports",
+        horizons=[30],
+        tasks=["accident_risk", "congestion_level"],
+    )
+
+    assert len(results) == 2
+    for result in results:
+        assert result["test_partition_used_for_selection"] is False
+        assert result["test_metrics"]["probability_calibration"]["rows"] == (
+            result["test_rows"]
+        )
+        artifact = joblib.load(tmp_path / result["artifact_path"])
+        assert artifact["probability_calibration_method"] == "held-out sigmoid"
+        assert artifact["probability_calibrator"] is not None
+        diagnostics = result["test_metrics"]["diagnostic_artifacts"]
+        assert all((tmp_path / path).is_file() for path in diagnostics.values())
 
 
 def test_pipeline_refuses_to_overwrite_an_existing_run(tmp_path, monkeypatch):
@@ -298,6 +577,13 @@ def test_upload_processor_preserves_raw_inputs_and_writes_isolated_outputs(
             }
         }
 
+    def fake_quality(raw_dir, json_path, markdown_path):
+        assert all((raw_dir / filename).is_file() for filename in original_raw)
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        json_path.write_text("{}")
+        markdown_path.write_text("# test quality report\n")
+        return {"source_sha256": {}}
+
     def fake_m2(raw_dir, interim_dir, report_dir):
         interim_dir.mkdir(parents=True)
         (interim_dir / "flowcast_m2_merged.csv").write_text("road_id\nR1\n")
@@ -315,6 +601,7 @@ def test_upload_processor_preserves_raw_inputs_and_writes_isolated_outputs(
     monkeypatch.setattr(upload_inference, "UPLOAD_ROOT", upload_root)
     monkeypatch.setattr(upload_inference, "RAW_DIR", raw_dir)
     monkeypatch.setattr(upload_inference, "run_validation", fake_validation)
+    monkeypatch.setattr(upload_inference, "write_quality_report", fake_quality)
     monkeypatch.setattr(upload_inference, "_run_m2", fake_m2)
     monkeypatch.setattr(upload_inference, "_run_m3", fake_m3)
 
@@ -323,6 +610,9 @@ def test_upload_processor_preserves_raw_inputs_and_writes_isolated_outputs(
     })
 
     assert result["manifest"]["status"] == "completed"
+    quality_report = root / result["manifest"]["data_quality_report"]["json"]
+    assert quality_report.is_file()
+    assert result["data_quality"]["source_sha256"] == {}
     assert set(result["manifest"]["fallback_files_from_project_raw_data"]) == {
         "calendar_events.csv",
         "weather_observations.csv",
@@ -421,3 +711,158 @@ def test_upload_prediction_labels_svm_decision_scores_as_uncalibrated(tmp_path, 
     ]
     assert result["risk_score"].tolist() == [0.25, -0.25]
     assert result["prediction"].tolist() == [1, 0]
+
+
+def test_upload_prediction_uses_calibrated_risk_probability_when_available(
+    tmp_path, monkeypatch
+):
+    class IdentityPreprocessor:
+        def transform(self, values):
+            return values.to_numpy()
+
+    class BaseModel:
+        def predict(self, values):
+            return np.zeros(len(values), dtype=int)
+
+    class ProbabilityCalibrator:
+        classes_ = np.array([0, 1])
+
+        def predict_proba(self, values):
+            positive = values[:, 0]
+            return np.column_stack([1 - positive, positive])
+
+    monkeypatch.setattr(upload_inference, "ROOT", tmp_path)
+    bundle = {
+        "features": ["risk_signal"],
+        "preprocessor": IdentityPreprocessor(),
+        "model": BaseModel(),
+        "probability_calibrator": ProbabilityCalibrator(),
+        "validation_threshold": 0.5,
+        "artifact": tmp_path / "models/accident_risk_30m.joblib",
+    }
+    frame = pd.DataFrame({
+        "road_id": ["R1", "R2"],
+        "date": ["2025-01-01", "2025-01-01"],
+        "time": ["08:00", "08:00"],
+        "risk_signal": [0.8, 0.4],
+    })
+
+    result, skipped = upload_inference.predict_latest_uploaded_rows(
+        bundle,
+        frame,
+        task="accident_risk",
+        horizon=30,
+        model_run_id="verified-run",
+    )
+
+    assert skipped == 0
+    assert result["prediction"].tolist() == [1, 0]
+    assert result["risk_score"].tolist() == [0.8, 0.4]
+    assert result["risk_score_type"].tolist() == [
+        "held_out_sigmoid_calibrated_probability",
+        "held_out_sigmoid_calibrated_probability",
+    ]
+    assert result["confidence_type"].eq(
+        "held_out_sigmoid_calibrated_probability"
+    ).all()
+
+
+def test_upload_prediction_persists_csv_and_reproducibility_manifest(
+    tmp_path,
+    monkeypatch,
+):
+    root = tmp_path
+    run_dir = root / "data/interim/upload_runs/upload_test"
+    run_dir.mkdir(parents=True)
+    manifest = {"run_id": "upload_test", "status": "completed"}
+    (run_dir / "upload_manifest.json").write_text(json.dumps(manifest))
+    monkeypatch.setattr(upload_inference, "ROOT", root)
+    monkeypatch.setattr(
+        upload_inference,
+        "UPLOAD_ROOT",
+        root / "data/interim/upload_runs",
+    )
+    predictions = pd.DataFrame({
+        "road_id": ["R1", "R2"],
+        "model_run_id": ["model_run", "model_run"],
+        "model_artifact": [
+            "models/m5/traffic_volume_30m.joblib",
+            "models/m5/traffic_volume_30m.joblib",
+        ],
+        "prediction": [100.0, 120.0],
+        "lower_90": [90.0, 110.0],
+        "upper_90": [110.0, 130.0],
+    })
+
+    record = upload_inference.persist_upload_predictions(
+        {"run_dir": run_dir, "manifest": manifest},
+        predictions,
+        task="traffic_volume",
+        horizon=30,
+        model_run_id="model_run",
+        skipped_roads=1,
+    )
+
+    prediction_path = root / record["prediction_file"]
+    saved_predictions = pd.read_csv(prediction_path)
+    saved_manifest = json.loads((run_dir / "upload_manifest.json").read_text())
+    assert prediction_path.is_file()
+    assert record["prediction_rows"] == 2
+    assert record["task_horizon_coverage"] == ["traffic_volume_30m"]
+    assert record["predicted_road_count"] == 2
+    assert record["input_road_count"] == 3
+    assert record["skipped_road_count"] == 1
+    assert record["interval_validation"] == {
+        "applicable": True,
+        "checked_rows": 2,
+        "finite_bounds": True,
+        "ordered_bounds": True,
+    }
+    assert saved_predictions["upload_run_id"].eq("upload_test").all()
+    assert saved_manifest["prediction_runs"] == [record]
+
+
+def test_sequence_sweep_aligns_predictions_to_requested_road_time_order():
+    candidate_keys = pd.DataFrame({
+        "sequence_index": [0, 1, 2],
+        "road_id": ["R2", "R1", "R1"],
+        "timestamp": pd.to_datetime([
+            "2025-01-01 01:00",
+            "2025-01-01 00:00",
+            "2025-01-01 01:00",
+        ]),
+    })
+    requested_keys = candidate_keys.iloc[[2, 0]].reset_index(drop=True)
+
+    indices = m6_sequence_length_sweep._sequence_indices_in_order(
+        candidate_keys,
+        requested_keys,
+    )
+
+    assert indices.tolist() == [2, 0]
+
+
+def test_feature_importance_can_run_inside_pipeline_but_not_for_incomplete_runs(
+    tmp_path,
+    monkeypatch,
+):
+    run_id = "in-progress"
+    report_dir = tmp_path / "reports/corrected_v2" / run_id
+    report_dir.mkdir(parents=True)
+    (report_dir / "run_manifest.json").write_text(json.dumps({
+        "run_id": run_id,
+        "status": "running",
+        "paths": {"report_dir": f"reports/corrected_v2/{run_id}"},
+    }))
+    monkeypatch.setattr(feature_importance, "ROOT", tmp_path)
+
+    with pytest.raises(ValueError, match="not a completed"):
+        feature_importance._load_run(run_id)
+
+    loaded_run_id, _, loaded_report_dir = feature_importance._load_run(
+        run_id,
+        allow_in_progress=True,
+    )
+
+    assert loaded_run_id == run_id
+    assert loaded_report_dir == report_dir
